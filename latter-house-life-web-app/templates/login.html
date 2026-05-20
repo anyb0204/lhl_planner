@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if mode == 'setup' %}Set up your planner{% else %}Login to your planner{% endif %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --gold-deep:#c9a84c;
+        --gold-mid:#e8c96a;
+        --gold-light:#f5dfa0;
+        --cream:#fffaf0;
+        --ink:#392b1d;
+        --muted:#7c6750;
+      }
+      * { box-sizing:border-box; }
+      body {
+        margin:0;
+        min-height:100vh;
+        font-family:"Lora", serif;
+        background: radial-gradient(circle at top, rgba(245,223,160,0.45), transparent 36%), linear-gradient(180deg, #fffdf7, #f8f3e7);
+        color:var(--ink);
+        display:grid;
+        place-items:center;
+        padding:24px;
+      }
+      .shell {
+        width:min(960px, 100%);
+        display:grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap:22px;
+        align-items:stretch;
+      }
+      .hero, .card {
+        background:rgba(255,255,255,0.86);
+        border:1px solid rgba(201,168,76,0.22);
+        border-radius:28px;
+        box-shadow:0 18px 60px rgba(57,43,29,0.08);
+      }
+      .hero {
+        padding:34px;
+        display:flex;
+        flex-direction:column;
+        justify-content:space-between;
+      }
+      .brand-script {
+        font-family:"Pinyon Script", cursive;
+        font-size:3rem;
+        color:var(--gold-deep);
+      }
+      .brand-title {
+        font-size:1.2rem;
+        text-transform:uppercase;
+        letter-spacing:0.18em;
+        color:var(--muted);
+      }
+      .hero h1 {
+        font-size:2rem;
+        margin:18px 0 14px;
+      }
+      .hero p {
+        color:var(--muted);
+        line-height:1.7;
+        margin:0;
+      }
+      .feature-list {
+        margin-top:22px;
+        display:grid;
+        gap:12px;
+      }
+      .feature {
+        padding:14px 16px;
+        border-radius:18px;
+        background:linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,250,240,0.92));
+        border:1px solid rgba(201,168,76,0.16);
+      }
+      .card {
+        padding:28px;
+      }
+      .eyebrow {
+        text-transform:uppercase;
+        letter-spacing:0.16em;
+        color:var(--gold-deep);
+        font-size:0.76rem;
+        font-weight:700;
+      }
+      h2 { margin:10px 0 8px; font-size:1.6rem; }
+      .help { color:var(--muted); line-height:1.6; margin-bottom:18px; }
+      label {
+        display:block;
+        margin:14px 0 8px;
+        font-size:0.86rem;
+        font-weight:700;
+        color:var(--muted);
+      }
+      input {
+        width:100%;
+        border-radius:16px;
+        border:1px solid rgba(201,168,76,0.22);
+        background:#fff;
+        padding:14px 16px;
+        font:inherit;
+        color:var(--ink);
+      }
+      button {
+        margin-top:18px;
+        width:100%;
+        border:0;
+        border-radius:999px;
+        padding:14px 18px;
+        font:inherit;
+        font-weight:700;
+        background:linear-gradient(135deg, var(--gold-deep), var(--gold-mid));
+        color:white;
+        cursor:pointer;
+      }
+      .secondary-link {
+        display:inline-block;
+        margin-top:14px;
+        color:var(--gold-deep);
+        text-decoration:none;
+        font-weight:700;
+      }
+      .error {
+        margin-bottom:14px;
+        padding:12px 14px;
+        border-radius:14px;
+        background:#fff1ef;
+        color:#8d342a;
+        border:1px solid #f3c7bf;
+      }
+      .tip {
+        margin-top:14px;
+        font-size:0.88rem;
+        color:var(--muted);
+      }
+      @media (max-width: 860px) {
+        .shell { grid-template-columns:1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <section class="hero">
+        <div>
+          <div class="brand-script">latter house life</div>
+          <div class="brand-title">Digital Planner Web App</div>
+          <h1>{% if mode == 'setup' %}Create your secure planner access{% else %}Welcome back{% endif %}</h1>
+          <p>
+            Your planner now runs as a password-protected web app with persistent saves, date-based planning pages, and a protected login experience.
+          </p>
+          <div class="feature-list">
+            <div class="feature">Daily, weekly, monthly, yearly, and tracker pages save into a persistent local database.</div>
+            <div class="feature">Manual save actions create a history timeline you can revisit later.</div>
+            <div class="feature">Calendar day notes, progress tracking, and planner helpers all work after login.</div>
+          </div>
+        </div>
+      </section>
+      <section class="card">
+        <div class="eyebrow">{% if mode == 'setup' %}First-time setup{% else %}Secure sign in{% endif %}</div>
+        <h2>{% if mode == 'setup' %}Set your username and password{% else %}Log in to continue{% endif %}</h2>
+        <div class="help">
+          {% if mode == 'setup' %}
+            Create the first account for this planner. Your password must be at least 8 characters.
+          {% else %}
+            Enter the credentials for your planner account to open the protected dashboard.
+          {% endif %}
+        </div>
+
+        {% if error %}
+          <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" required autocomplete="username">
+
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" required autocomplete="current-password">
+
+          {% if mode == 'setup' %}
+            <label for="confirm_password">Confirm password</label>
+            <input id="confirm_password" name="confirm_password" type="password" required autocomplete="new-password">
+          {% endif %}
+
+          <button type="submit">{% if mode == 'setup' %}Create secure access{% else %}Open planner{% endif %}</button>
+        </form>
+
+        {% if mode == 'setup' %}
+          <div class="tip">After setup, you will be redirected to the login page so you can sign in with your new password.</div>
+        {% else %}
+          <a class="secondary-link" href="{{ url_for('setup') }}">Need first-time setup</a>
+        {% endif %}
+      </section>
+    </div>
+  </body>
+</html>

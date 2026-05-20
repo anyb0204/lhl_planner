@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html data-theme="light" lang="en"><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="no-cache, no-store, must-revalidate" http-equiv="cache-control"/>
+<meta content="no-cache" http-equiv="pragma"/>
+<meta content="0" http-equiv="expires"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<meta content="yes" name="mobile-web-app-capable"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="default" name="apple-mobile-web-app-status-bar-style"/>
+<title>Latter House Life — Digital Planner</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&amp;family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&amp;display=swap" rel="stylesheet"/>
+<link href='{{ url_for("static", filename="styles.css") }}' rel="stylesheet"/></head>
+<body>
+<div class="auth-chip" id="auth-chip">
+<div class="auth-chip-title">Protected planner</div>
+<div class="auth-chip-actions">
+<button class="auth-chip-btn" id="change-password-btn" type="button">Change password</button>
+<button class="auth-chip-btn auth-chip-btn-primary" id="logout-btn" type="button">Log out</button>
+</div>
+</div>
+<div class="modal-overlay" id="password-modal">
+<div class="modal-sheet password-sheet">
+<div class="modal-handle"></div>
+<button class="modal-close" id="password-modal-close" type="button">✕</button>
+<div class="section-label" style="margin-bottom:10px;">Change password</div>
+<label class="section-label">Current password</label>
+<input class="field-input" id="current-password" placeholder="Current password" type="password"/>
+<label class="section-label" style="margin-top:12px;">New password</label>
+<input class="field-input" id="new-password" placeholder="At least 8 characters" type="password"/>
+<label class="section-label" style="margin-top:12px;">Confirm new password</label>
+<input class="field-input" id="confirm-password" placeholder="Repeat new password" type="password"/>
+<div style="margin-top:var(--space-4); display:flex; gap:var(--space-3);">
+<button class="btn btn-primary btn-full" id="password-save-btn" type="button">Update Password</button>
+<button class="btn btn-outline" id="password-cancel-btn" type="button">Cancel</button>
+</div>
+<div id="password-message" style="margin-top:10px;font-size:0.86rem;color:var(--color-text-muted);"></div>
+</div>
+</div>
+
+<div id="app">
+<!-- ===== MODALS ===== -->
+<!-- Day Note Modal -->
+<div class="modal-overlay" id="day-note-modal">
+<div class="modal-sheet">
+<div class="modal-handle"></div>
+<button class="modal-close">✕</button>
+<div class="day-note-date" id="day-note-date-label"></div>
+<label class="section-label">Note for this day</label>
+<textarea class="field-textarea" id="day-note-textarea" placeholder="Add a note, prayer, or reflection for this day..." rows="5"></textarea>
+<div style="margin-top:var(--space-4); display:flex; gap:var(--space-3);">
+<button class="btn btn-primary btn-full">Save Note</button>
+<button class="btn btn-outline">Cancel</button>
+</div>
+</div>
+</div>
+<!-- Full History Entry Modal -->
+<div class="modal-overlay" id="entry-modal">
+<div class="modal-sheet">
+<div class="modal-handle"></div>
+<button class="modal-close">✕</button>
+<div id="entry-modal-content"></div>
+</div>
+</div>
+<!-- Save Toast -->
+<div class="save-toast" id="save-toast">Entry saved</div>
+<!-- ===== AI CHAT DRAWER ===== -->
+<div id="ai-chat-overlay">
+<div id="ai-chat-sheet">
+<div class="ai-chat-header">
+<div class="ai-chat-title">Ask Anything</div>
+<button class="ai-chat-close">✕</button>
+</div>
+<div id="ai-chat-log"></div>
+<div class="ai-input-row">
+<input id="ai-chat-input" placeholder="Ask about priorities, tasks, decisions..." type="text"/>
+<button aria-label="Send" id="ai-chat-send">
+<svg fill="none" height="18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewbox="0 0 24 24" width="18"><line x1="22" x2="11" y1="2" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+</button>
+</div>
+</div>
+</div>
+<!-- ===== PAGE 1: TODAY ===== -->
+<section class="page active" id="page-today">
+<div class="page-header">
+<canvas height="264" id="sparkle-canvas" width="980"></canvas>
+<!-- Gold calligraphic scroll flourish above logo -->
+<div class="header-flourish">
+<svg fill="none" height="32" viewbox="0 0 160 32" width="160" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<lineargradient id="flourishGrad" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" stop-color="#C9A84C" stop-opacity="0"></stop>
+<stop offset="20%" stop-color="#C9A84C"></stop>
+<stop offset="50%" stop-color="#F5DFA0"></stop>
+<stop offset="80%" stop-color="#C9A84C"></stop>
+<stop offset="100%" stop-color="#C9A84C" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<!-- Main flowing scroll line -->
+<path d="M10 20 C20 20 25 10 35 12 C45 14 45 22 55 18 C65 14 65 8 75 10 C82 11.5 82 11.5 80 16" fill="none" stroke="url(#flourishGrad)" stroke-linecap="round" stroke-width="1.2"></path>
+<path d="M150 20 C140 20 135 10 125 12 C115 14 115 22 105 18 C95 14 95 8 85 10 C78 11.5 78 11.5 80 16" fill="none" stroke="url(#flourishGrad)" stroke-linecap="round" stroke-width="1.2"></path>
+<!-- Center star burst -->
+<path d="M80 4 L81 8 L85 8 L82 11 L83 15 L80 12 L77 15 L78 11 L75 8 L79 8Z" fill="url(#flourishGrad)" opacity="0.95"></path>
+<!-- Tiny flanking diamonds -->
+<path d="M60 16 L62 14 L64 16 L62 18Z" fill="#E8C96A" opacity="0.7"></path>
+<path d="M100 16 L98 14 L96 16 L98 18Z" fill="#E8C96A" opacity="0.7"></path>
+<!-- Tiny dots -->
+<circle cx="45" cy="17" fill="#E8C96A" opacity="0.6" r="1.5"></circle>
+<circle cx="115" cy="17" fill="#E8C96A" opacity="0.6" r="1.5"></circle>
+<circle cx="28" cy="19" fill="#C9A84C" opacity="0.5" r="1"></circle>
+<circle cx="132" cy="19" fill="#C9A84C" opacity="0.5" r="1"></circle>
+</svg>
+</div>
+<!-- LHL Logo SVG — lettermark with botanical vine -->
+<div class="lhl-logo">
+<svg aria-label="lhl lettermark" fill="none" height="64" viewbox="0 0 80 64" width="80" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<lineargradient id="lhlGold" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#F5DFA0"></stop>
+<stop offset="45%" stop-color="#E8C96A"></stop>
+<stop offset="100%" stop-color="#C9A84C"></stop>
+</lineargradient>
+</defs>
+<!-- Botanical vine above — curves left and right from center top -->
+<path d="M40 8 C35 8 28 6 22 8 C16 10 12 8 8 10" fill="none" stroke="url(#lhlGold)" stroke-linecap="round" stroke-width="1"></path>
+<path d="M40 8 C45 8 52 6 58 8 C64 10 68 8 72 10" fill="none" stroke="url(#lhlGold)" stroke-linecap="round" stroke-width="1"></path>
+<!-- Leaves on left branch -->
+<ellipse cx="22" cy="7" fill="url(#lhlGold)" opacity="0.9" rx="3" ry="1.5" transform="rotate(-20 22 7)"></ellipse>
+<ellipse cx="14" cy="9" fill="url(#lhlGold)" opacity="0.8" rx="2.5" ry="1.2" transform="rotate(-30 14 9)"></ellipse>
+<!-- Leaves on right branch -->
+<ellipse cx="56" cy="7" fill="url(#lhlGold)" opacity="0.9" rx="3" ry="1.5" transform="rotate(20 56 7)"></ellipse>
+<ellipse cx="65" cy="8" fill="url(#lhlGold)" opacity="0.8" rx="2.5" ry="1.2" transform="rotate(15 65 8)"></ellipse>
+<!-- Small flower on right end -->
+<circle cx="72" cy="10" fill="url(#lhlGold)" opacity="0.9" r="2"></circle>
+<circle cx="72" cy="7.5" fill="url(#lhlGold)" opacity="0.7" r="1"></circle>
+<circle cx="74" cy="10" fill="url(#lhlGold)" opacity="0.7" r="1"></circle>
+<circle cx="72" cy="12" fill="url(#lhlGold)" opacity="0.7" r="1"></circle>
+<circle cx="70" cy="10" fill="url(#lhlGold)" opacity="0.7" r="1"></circle>
+<!-- Left l -->
+<rect fill="url(#lhlGold)" height="36" rx="2.5" width="5" x="8" y="14"></rect>
+<rect fill="url(#lhlGold)" height="2" rx="1" width="9" x="6" y="48"></rect>
+<!-- Right l -->
+<rect fill="url(#lhlGold)" height="36" rx="2.5" width="5" x="67" y="14"></rect>
+<rect fill="url(#lhlGold)" height="2" rx="1" width="9" x="65" y="48"></rect>
+<!-- h left stem -->
+<rect fill="url(#lhlGold)" height="36" rx="2.5" width="5" x="29" y="14"></rect>
+<!-- h arch -->
+<path d="M34 32 Q34 22 39 20 Q44 18 47 22 Q50 26 50 32 L50 50 L55 50 L55 32 Q55 18 46 14 Q37 10 34 24Z" fill="url(#lhlGold)"></path>
+<!-- h right leg serif -->
+<rect fill="url(#lhlGold)" height="2" rx="1" width="9" x="50" y="48"></rect>
+</svg>
+</div>
+<div class="header-script">latter house life</div>
+<div class="header-subtitle">Latter House Life</div>
+<div class="header-date" id="today-date-display">Friday, May 1, 2026</div>
+</div>
+<div class="page-content">
+<!-- SECTION 1: I Am Declaration -->
+<div class="card card-identity">
+<span class="section-label">Who I Am Today</span>
+<p style="font-size:0.82rem;color:var(--color-text-faint);font-style:italic;margin-bottom:8px;line-height:1.5;">
+          Fill in the blank: “Today I am a woman who ___.” Write who the Word says you are today — not who you feel like, but who God says you are.
+        </p>
+<textarea class="field-textarea" id="i-am-declaration" placeholder="Today I am a woman who ___________" rows="3"></textarea>
+<p class="identity-prompt">
+          You are <em>chosen</em> <span style="font-size:0.75rem;opacity:0.75;">— 1 Peter 2:9</span>  
+          <em>redeemed</em> <span style="font-size:0.75rem;opacity:0.75;">— Galatians 3:13</span>  
+          <em>clothed in strength</em> <span style="font-size:0.75rem;opacity:0.75;">— Proverbs 31:25</span>   and
+          <em>called for such a time as this</em> <span style="font-size:0.75rem;opacity:0.75;">— Esther 4:14</span>.
+        </p>
+</div>
+<!-- SECTION 2: Energy Level -->
+<div class="card">
+<span class="section-label">My Energy Level Today</span>
+<div class="energy-row">
+<button class="energy-btn">🌱 Low</button>
+<button class="energy-btn active">☀️ Medium</button>
+<button class="energy-btn">🔥 High</button>
+</div>
+</div>
+<!-- SECTION 3: Scripture of the Day -->
+<div class="card card-gold">
+<span class="section-label">Scripture of the Day</span>
+<!-- Mode toggle -->
+<div style="display:flex;gap:6px;margin-bottom:10px;">
+<button class="btn btn-sm btn-gold" id="scrip-mode-write" style="flex:1;">Write My Own</button>
+<button class="btn btn-sm btn-outline" id="scrip-mode-daily" style="flex:1;">Daily Scripture</button>
+</div>
+<!-- Write-your-own mode -->
+<div id="scrip-write-area">
+<textarea class="field-textarea" id="scripture-own" placeholder="Write the verse that's speaking to you today..." rows="3"></textarea>
+</div>
+<!-- Daily scripture mode -->
+<div id="scrip-daily-area" style="display:none;">
+<div class="scripture-display" id="scripture-display">
+<em id="scripture-text" style="color:var(--color-text-faint);">Tap below to receive today's scripture...</em>
+</div>
+<button class="btn btn-gold btn-full">
+<svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="16"><path d="M12 2L12 6M12 18L12 22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93"></path></svg>
+            Receive Today's Scripture
+          </button>
+</div>
+</div>
+<!-- SECTION 4: The ONE Must Do -->
+<div class="card" style="border-left:4px solid var(--gold-deep);">
+<span class="section-label">The One Must Do</span>
+<p style="font-size:0.82rem;color:var(--color-text-muted);font-style:italic;margin-bottom:10px;">If I do nothing else today, I will do this.</p>
+<div class="task-row check-item" style="border:none;padding:0;margin-bottom:0;">
+<div class="check-dot"><div class="check-dot-inner"></div></div>
+<input class="field-input task-input" id="must-do-input" placeholder="My one non-negotiable today..." style="flex:1;" type="text"/>
+</div>
+<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+<button class="btn-sparkle-helper" style="margin-top:0;">✦ Help Me Decide</button>
+<button class="btn-ask-ai">
+<svg fill="none" height="13" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="13"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4M12 16h.01"></path></svg>
+            Ask
+          </button>
+</div>
+<div class="tip-box" id="decide-tip"></div>
+</div>
+<!-- SECTION 5: Nice To Do -->
+<div class="card">
+<span class="section-label">Nice To Do</span>
+<p style="font-size:0.82rem;color:var(--color-text-muted);font-style:italic;margin-bottom:10px;">Only if I have energy after the Must Do.</p>
+<div class="task-row check-item" style="border:none;padding:0;margin-bottom:8px;">
+<div class="check-dot"><div class="check-dot-inner"></div></div>
+<input class="field-input task-input" id="nice-to-do-1" placeholder="Something I'd love to get done..." style="flex:1;" type="text"/>
+</div>
+<div class="task-row check-item" style="border:none;padding:0;">
+<div class="check-dot"><div class="check-dot-inner"></div></div>
+<input class="field-input task-input" id="nice-to-do-2" placeholder="One more nice-to-do..." style="flex:1;" type="text"/>
+</div>
+</div>
+<!-- SECTION 6: Today's Task List -->
+<div class="card">
+<span class="section-label">Today's Tasks</span>
+<div id="task-list">
+<div class="task-row check-item" style="border:none;padding:0;margin-bottom:8px;">
+<div class="check-dot"><div class="check-dot-inner"></div></div>
+<input class="field-input task-input" placeholder="Add a task..." style="flex:1;" type="text"/>
+</div>
+<div class="task-row check-item" style="border:none;padding:0;margin-bottom:8px;">
+<div class="check-dot"><div class="check-dot-inner"></div></div>
+<input class="field-input task-input" placeholder="Add a task..." style="flex:1;" type="text"/>
+</div>
+<div class="task-row check-item" style="border:none;padding:0;margin-bottom:8px;">
+<div class="check-dot"><div class="check-dot-inner"></div></div>
+<input class="field-input task-input" placeholder="Add a task..." style="flex:1;" type="text"/>
+</div>
+<div class="task-row check-item" style="border:none;padding:0;margin-bottom:8px;">
+<div class="check-dot"><div class="check-dot-inner"></div></div>
+<input class="field-input task-input" placeholder="Add a task..." style="flex:1;" type="text"/>
+</div>
+<div class="task-row check-item" style="border:none;padding:0;margin-bottom:8px;">
+<div class="check-dot"><div class="check-dot-inner"></div></div>
+<input class="field-input task-input" placeholder="Add a task..." style="flex:1;" type="text"/>
+</div>
+</div>
+<div style="display:flex;gap:8px;margin-top:6px;">
+<button class="add-task-btn" style="flex:1;margin-top:0;">+ Add Task</button>
+<button class="btn-ask-ai">
+<svg fill="none" height="13" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="13"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4M12 16h.01"></path></svg>
+            Ask
+          </button>
+</div>
+</div>
+<!-- SECTION 7: Top 3 Priorities -->
+<div class="card">
+<span class="section-label">Top 3 Priorities</span>
+<div class="labeled-row"><div class="bullet-icon">1</div><input class="field-input" id="priority-1" placeholder="First priority..." type="text"/></div>
+<div class="labeled-row"><div class="bullet-icon">2</div><input class="field-input" id="priority-2" placeholder="Second priority..." type="text"/></div>
+<div class="labeled-row"><div class="bullet-icon">3</div><input class="field-input" id="priority-3" placeholder="Third priority..." type="text"/></div>
+<button class="btn-sparkle-helper">✦ Order My Steps</button>
+<div class="tip-box" id="steps-output" style="font-style:normal;"></div>
+</div>
+<!-- SECTION 8: Brain Dump -->
+<div class="card">
+<span class="section-label">Brain Dump</span>
+<p style="font-size:0.82rem;color:var(--color-text-muted);font-style:italic;margin-bottom:10px;">Just ramble. Write everything in your head — the tasks, the worries, the random thoughts. Then tap the button and let the planner sort it out for you.</p>
+<textarea class="field-textarea" id="brain-dump" placeholder="I need to call the school, pick up prescriptions, finish that thing for work, my friend's mom died and I need to take her food, I haven't cleaned the bathroom in forever, I don't even know where to start..." rows="6"></textarea>
+<button class="btn-sparkle-helper" style="margin-top:12px;width:100%;">✨ Sort This Out For Me</button>
+<div id="brain-dump-output" style="display:none;margin-top:12px;"></div>
+</div>
+<!-- SECTION 9: Truth Generator -->
+<div class="card card-truth">
+<span class="section-label">Truth Generator</span>
+<p style="font-style:italic;font-size:0.82rem;color:var(--mint);margin-bottom:14px;">Catch the lie. Replace it with Truth.</p>
+<label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:rgba(255,255,255,0.75);letter-spacing:0.05em;">The lie I'm believing right now:</label>
+<input class="field-input" id="lie-input" placeholder="I'm not good enough... I'm too far behind... I can't do this..." type="text"/>
+<button class="btn-sparkle-helper" style="margin-top:12px;">✦ Speak Truth Over Me</button>
+<div class="truth-box" id="truth-output"></div>
+</div>
+<!-- SECTION 10: Prayer Requests -->
+<div class="card">
+<span class="section-label">Prayer Requests</span>
+<div class="labeled-row"><div class="bullet-icon">1</div><input class="field-input" id="prayer-1" placeholder="First prayer request..." type="text"/></div>
+<div class="labeled-row"><div class="bullet-icon">2</div><input class="field-input" id="prayer-2" placeholder="Second prayer request..." type="text"/></div>
+<div class="labeled-row"><div class="bullet-icon">3</div><input class="field-input" id="prayer-3" placeholder="Third prayer request..." type="text"/></div>
+</div>
+<!-- SECTION 11: Gratitude -->
+<div class="card">
+<span class="section-label">Gratitude — 3 Things</span>
+<div class="labeled-row"><div class="bullet-icon">✦</div><input class="field-input" id="gratitude-1" placeholder="I am grateful for..." type="text"/></div>
+<div class="labeled-row"><div class="bullet-icon">✦</div><input class="field-input" id="gratitude-2" placeholder="I am grateful for..." type="text"/></div>
+<div class="labeled-row"><div class="bullet-icon">✦</div><input class="field-input" id="gratitude-3" placeholder="I am grateful for..." type="text"/></div>
+</div>
+<!-- SECTION 13: Daily Intentions -->
+<div class="card">
+<span class="section-label">Daily Intentions</span>
+<div class="checklist" id="intentions-list">
+<div class="check-item" data-key="pray_worship">
+<div class="check-dot"><div class="check-dot-inner"></div></div>
+<span class="check-label">Pray &amp; Worship</span>
+</div>
+<div class="check-item" data-key="read_word">
+<div class="check-dot"><div class="check-dot-inner"></div></div>
+<span class="check-label">Read the Word</span>
+</div>
+<div class="check-item" data-key="serve_others">
+<div class="check-dot"><div class="check-dot-inner"></div></div>
+<span class="check-label">Serve Others</span>
+</div>
+<div class="check-item" data-key="rest_sabbath">
+<div class="check-dot"><div class="check-dot-inner"></div></div>
+<span class="check-label">Rest &amp; Sabbath</span>
+</div>
+<div class="check-item" data-key="fast_sacrifice">
+<div class="check-dot"><div class="check-dot-inner"></div></div>
+<span class="check-label">Fast / Sacrifice</span>
+</div>
+<div class="check-item" data-key="connect_family">
+<div class="check-dot"><div class="check-dot-inner"></div></div>
+<span class="check-label">Connect with Family</span>
+</div>
+<div class="check-item" data-key="faith_action">
+<div class="check-dot"><div class="check-dot-inner"></div></div>
+<span class="check-label">Faith in Action</span>
+</div>
+<div class="check-item" data-key="kingdom_business">
+<div class="check-dot"><div class="check-dot-inner"></div></div>
+<span class="check-label">Kingdom Business</span>
+</div>
+</div>
+</div>
+<!-- SECTION 14: Evening Reflection -->
+<div class="card">
+<span class="section-label">Evening Reflection</span>
+<textarea class="field-textarea" id="evening-reflection" maxlength="500" placeholder="How did God move today? What are you sensing in your spirit?" rows="5"></textarea>
+<div class="char-counter" id="reflection-counter">0 / 500</div>
+</div>
+<!-- SECTION 15: Action Buttons -->
+<div class="action-row">
+<button class="btn btn-primary">
+<svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17,21 17,13 7,13 7,21"></polyline><polyline points="7,3 7,8 15,8"></polyline></svg>
+          Save Today
+        </button>
+<button class="btn btn-outline">Clear</button>
+</div>
+<div class="page-footer">"The glory of this latter house shall be greater." — Haggai 2:9</div>
+</div>
+</section>
+<!-- ===== PAGE 2: WEEK ===== -->
+<section class="page" id="page-week">
+<div class="page-header">
+<div class="header-flourish">
+<svg fill="none" height="26" viewbox="0 0 160 32" width="130"><defs><lineargradient id="fg2" x1="0%" x2="100%" y1="0%" y2="0%"><stop offset="0%" stop-color="#C9A84C" stop-opacity="0"></stop><stop offset="20%" stop-color="#C9A84C"></stop><stop offset="50%" stop-color="#F5DFA0"></stop><stop offset="80%" stop-color="#C9A84C"></stop><stop offset="100%" stop-color="#C9A84C" stop-opacity="0"></stop></lineargradient></defs><path d="M10 20 C20 20 25 10 35 12 C45 14 45 22 55 18 C65 14 65 8 75 10 C82 11.5 82 11.5 80 16" fill="none" stroke="url(#fg2)" stroke-linecap="round" stroke-width="1.2"></path><path d="M150 20 C140 20 135 10 125 12 C115 14 115 22 105 18 C95 14 95 8 85 10 C78 11.5 78 11.5 80 16" fill="none" stroke="url(#fg2)" stroke-linecap="round" stroke-width="1.2"></path><path d="M80 4 L81 8 L85 8 L82 11 L83 15 L80 12 L77 15 L78 11 L75 8 L79 8Z" fill="url(#fg2)" opacity="0.95"></path><circle cx="45" cy="17" fill="#E8C96A" opacity="0.6" r="1.5"></circle><circle cx="115" cy="17" fill="#E8C96A" opacity="0.6" r="1.5"></circle></svg>
+</div>
+<div class="lhl-logo">
+<svg aria-label="lhl lettermark" fill="none" height="64" viewbox="0 0 80 64" width="80" xmlns="http://www.w3.org/2000/svg"><defs><lineargradient id="lg2" x1="0%" x2="0%" y1="0%" y2="100%"><stop offset="0%" stop-color="#F5DFA0"></stop><stop offset="45%" stop-color="#E8C96A"></stop><stop offset="100%" stop-color="#C9A84C"></stop></lineargradient></defs><path d="M40 8 C35 8 28 6 22 8 C16 10 12 8 8 10" fill="none" stroke="url(#lg2)" stroke-linecap="round" stroke-width="1"></path><path d="M40 8 C45 8 52 6 58 8 C64 10 68 8 72 10" fill="none" stroke="url(#lg2)" stroke-linecap="round" stroke-width="1"></path><ellipse cx="22" cy="7" fill="url(#lg2)" opacity="0.9" rx="3" ry="1.5" transform="rotate(-20 22 7)"></ellipse><ellipse cx="14" cy="9" fill="url(#lg2)" opacity="0.8" rx="2.5" ry="1.2" transform="rotate(-30 14 9)"></ellipse><ellipse cx="56" cy="7" fill="url(#lg2)" opacity="0.9" rx="3" ry="1.5" transform="rotate(20 56 7)"></ellipse><ellipse cx="65" cy="8" fill="url(#lg2)" opacity="0.8" rx="2.5" ry="1.2" transform="rotate(15 65 8)"></ellipse><circle cx="72" cy="10" fill="url(#lg2)" opacity="0.9" r="2"></circle><circle cx="72" cy="7.5" fill="url(#lg2)" opacity="0.7" r="1"></circle><circle cx="74" cy="10" fill="url(#lg2)" opacity="0.7" r="1"></circle><circle cx="72" cy="12" fill="url(#lg2)" opacity="0.7" r="1"></circle><circle cx="70" cy="10" fill="url(#lg2)" opacity="0.7" r="1"></circle><rect fill="url(#lg2)" height="36" rx="2.5" width="5" x="8" y="14"></rect><rect fill="url(#lg2)" height="2" rx="1" width="9" x="6" y="48"></rect><rect fill="url(#lg2)" height="36" rx="2.5" width="5" x="67" y="14"></rect><rect fill="url(#lg2)" height="2" rx="1" width="9" x="65" y="48"></rect><rect fill="url(#lg2)" height="36" rx="2.5" width="5" x="29" y="14"></rect><path d="M34 32 Q34 22 39 20 Q44 18 47 22 Q50 26 50 32 L50 50 L55 50 L55 32 Q55 18 46 14 Q37 10 34 24Z" fill="url(#lg2)"></path><rect fill="url(#lg2)" height="2" rx="1" width="9" x="50" y="48"></rect></svg>
+</div>
+<div class="header-script">latter house life</div>
+<div class="header-subtitle">Latter House Life</div>
+<div class="header-date" id="week-range-display">Apr 27 – May 3, 2026</div>
+</div>
+<!-- Week Navigation -->
+<div class="week-nav">
+<button aria-label="Previous week" class="nav-arrow">
+<svg fill="none" height="16" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24" width="16"><polyline points="15,18 9,12 15,6"></polyline></svg>
+</button>
+<span class="week-range" id="week-range-label">Apr 27 – May 3</span>
+<button aria-label="Next week" class="nav-arrow">
+<svg fill="none" height="16" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24" width="16"><polyline points="9,18 15,12 9,6"></polyline></svg>
+</button>
+</div>
+<!-- 7-Day Grid -->
+<div class="day-grid" id="week-day-grid"><div class="day-col"><div class="day-name">Mon</div><div class="day-num">27</div><textarea class="day-input" placeholder="Focus..." rows="3"></textarea><input class="day-priority" placeholder="★ Priority" type="text"/></div><div class="day-col"><div class="day-name">Tue</div><div class="day-num">28</div><textarea class="day-input" placeholder="Focus..." rows="3"></textarea><input class="day-priority" placeholder="★ Priority" type="text"/></div><div class="day-col"><div class="day-name">Wed</div><div class="day-num">29</div><textarea class="day-input" placeholder="Focus..." rows="3"></textarea><input class="day-priority" placeholder="★ Priority" type="text"/></div><div class="day-col"><div class="day-name">Thu</div><div class="day-num">30</div><textarea class="day-input" placeholder="Focus..." rows="3"></textarea><input class="day-priority" placeholder="★ Priority" type="text"/></div><div class="day-col today"><div class="day-name">Fri</div><div class="day-num">1</div><textarea class="day-input" placeholder="Focus..." rows="3"></textarea><input class="day-priority" placeholder="★ Priority" type="text"/></div><div class="day-col"><div class="day-name">Sat</div><div class="day-num">2</div><textarea class="day-input" placeholder="Focus..." rows="3"></textarea><input class="day-priority" placeholder="★ Priority" type="text"/></div><div class="day-col"><div class="day-name">Sun</div><div class="day-num">3</div><textarea class="day-input" placeholder="Focus..." rows="3"></textarea><input class="day-priority" placeholder="★ Priority" type="text"/></div></div>
+<!-- Week Sections Below Grid -->
+<div class="week-section">
+<div class="card card-gold">
+<span class="section-label">This Week's Scripture</span>
+<input class="field-input" id="week-scripture" placeholder="A verse to anchor your week..." type="text"/>
+</div>
+<div class="card">
+<span class="section-label">Weekly Intentions</span>
+<div class="labeled-row"><div class="bullet-icon">1</div><input class="field-input" id="week-intention-1" placeholder="This week I will..." type="text"/></div>
+<div class="labeled-row"><div class="bullet-icon">2</div><input class="field-input" id="week-intention-2" placeholder="This week I will..." type="text"/></div>
+<div class="labeled-row"><div class="bullet-icon">3</div><input class="field-input" id="week-intention-3" placeholder="This week I will..." type="text"/></div>
+<div style="margin-top:10px;">
+<button class="btn-ask-ai">
+<svg fill="none" height="13" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="13"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4M12 16h.01"></path></svg>
+            Ask for Help Deciding
+          </button>
+</div>
+</div>
+<div class="card">
+<span class="section-label">Weekly Reflection</span>
+<textarea class="field-textarea" id="week-reflection" placeholder="What did this week teach you? Where did you see God at work?" rows="4"></textarea>
+</div>
+<!-- Meals & Groceries -->
+<div class="card">
+<span class="section-label">Meals &amp; Groceries</span>
+<p style="font-size:0.82rem;color:var(--color-text-muted);font-style:italic;margin-bottom:12px;">Plan dinners for the week first — then your grocery list practically writes itself.</p>
+<!-- Dinner plan by day -->
+<div style="margin-bottom:14px;">
+<div style="font-size:0.8rem;font-weight:700;color:var(--forest);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">This Week's Dinners</div>
+<div style="display:flex;flex-direction:column;gap:6px;">
+<div style="display:flex;align-items:center;gap:8px;"><span style="width:28px;font-size:0.78rem;font-weight:700;color:var(--gold-deep);">Sun</span><input class="field-input" placeholder="Sunday dinner..." type="text"/></div>
+<div style="display:flex;align-items:center;gap:8px;"><span style="width:28px;font-size:0.78rem;font-weight:700;color:var(--gold-deep);">Mon</span><input class="field-input" placeholder="Monday dinner..." type="text"/></div>
+<div style="display:flex;align-items:center;gap:8px;"><span style="width:28px;font-size:0.78rem;font-weight:700;color:var(--gold-deep);">Tue</span><input class="field-input" placeholder="Tuesday dinner..." type="text"/></div>
+<div style="display:flex;align-items:center;gap:8px;"><span style="width:28px;font-size:0.78rem;font-weight:700;color:var(--gold-deep);">Wed</span><input class="field-input" placeholder="Wednesday dinner..." type="text"/></div>
+<div style="display:flex;align-items:center;gap:8px;"><span style="width:28px;font-size:0.78rem;font-weight:700;color:var(--gold-deep);">Thu</span><input class="field-input" placeholder="Thursday dinner..." type="text"/></div>
+<div style="display:flex;align-items:center;gap:8px;"><span style="width:28px;font-size:0.78rem;font-weight:700;color:var(--gold-deep);">Fri</span><input class="field-input" placeholder="Friday dinner..." type="text"/></div>
+<div style="display:flex;align-items:center;gap:8px;"><span style="width:28px;font-size:0.78rem;font-weight:700;color:var(--gold-deep);">Sat</span><input class="field-input" placeholder="Saturday dinner..." type="text"/></div>
+</div>
+</div>
+<!-- Grocery list -->
+<div style="font-size:0.8rem;font-weight:700;color:var(--forest);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Grocery List</div>
+<div id="grocery-list-container">
+<div class="task-row check-item"><div class="check-dot"><div class="check-dot-inner"></div></div><input class="field-input task-input" placeholder="Add item..." style="flex:1;" type="text"/></div>
+<div class="task-row check-item"><div class="check-dot"><div class="check-dot-inner"></div></div><input class="field-input task-input" placeholder="Add item..." style="flex:1;" type="text"/></div>
+<div class="task-row check-item"><div class="check-dot"><div class="check-dot-inner"></div></div><input class="field-input task-input" placeholder="Add item..." style="flex:1;" type="text"/></div>
+<div class="task-row check-item"><div class="check-dot"><div class="check-dot-inner"></div></div><input class="field-input task-input" placeholder="Add item..." style="flex:1;" type="text"/></div>
+<div class="task-row check-item"><div class="check-dot"><div class="check-dot-inner"></div></div><input class="field-input task-input" placeholder="Add item..." style="flex:1;" type="text"/></div>
+</div>
+<button class="add-task-btn" style="margin-top:8px;">+ Add Item</button>
+</div>
+<!-- This Week's Appointments -->
+<div class="card">
+<span class="section-label">This Week's Appointments</span>
+<div id="week-appts-container">
+<div class="labeled-row" style="gap:8px;align-items:center;">
+<input class="field-input" placeholder="Day &amp; time..." style="width:38%;min-width:0;" type="text"/>
+<input class="field-input" placeholder="Who / What..." style="flex:1;min-width:0;" type="text"/>
+</div>
+<div class="labeled-row" style="gap:8px;align-items:center;">
+<input class="field-input" placeholder="Day &amp; time..." style="width:38%;min-width:0;" type="text"/>
+<input class="field-input" placeholder="Who / What..." style="flex:1;min-width:0;" type="text"/>
+</div>
+<div class="labeled-row" style="gap:8px;align-items:center;">
+<input class="field-input" placeholder="Day &amp; time..." style="width:38%;min-width:0;" type="text"/>
+<input class="field-input" placeholder="Who / What..." style="flex:1;min-width:0;" type="text"/>
+</div>
+<div class="labeled-row" style="gap:8px;align-items:center;">
+<input class="field-input" placeholder="Day &amp; time..." style="width:38%;min-width:0;" type="text"/>
+<input class="field-input" placeholder="Who / What..." style="flex:1;min-width:0;" type="text"/>
+</div>
+</div>
+<button class="add-task-btn" style="margin-top:8px;">+ Add Appointment</button>
+</div>
+<div class="action-row">
+<button class="btn btn-primary btn-full">
+<svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17,21 17,13 7,13 7,21"></polyline><polyline points="7,3 7,8 15,8"></polyline></svg>
+          Save This Week
+        </button>
+</div>
+<div class="page-footer">"She is clothed with strength and dignity." — Proverbs 31:25</div>
+</div>
+</section>
+<!-- ===== PAGE 3: MONTH ===== -->
+<section class="page" id="page-month">
+<div class="page-header">
+<div class="header-flourish">
+<svg fill="none" height="26" viewbox="0 0 160 32" width="130"><defs><lineargradient id="fg3" x1="0%" x2="100%" y1="0%" y2="0%"><stop offset="0%" stop-color="#C9A84C" stop-opacity="0"></stop><stop offset="20%" stop-color="#C9A84C"></stop><stop offset="50%" stop-color="#F5DFA0"></stop><stop offset="80%" stop-color="#C9A84C"></stop><stop offset="100%" stop-color="#C9A84C" stop-opacity="0"></stop></lineargradient></defs><path d="M10 20 C20 20 25 10 35 12 C45 14 45 22 55 18 C65 14 65 8 75 10 C82 11.5 82 11.5 80 16" fill="none" stroke="url(#fg3)" stroke-linecap="round" stroke-width="1.2"></path><path d="M150 20 C140 20 135 10 125 12 C115 14 115 22 105 18 C95 14 95 8 85 10 C78 11.5 78 11.5 80 16" fill="none" stroke="url(#fg3)" stroke-linecap="round" stroke-width="1.2"></path><path d="M80 4 L81 8 L85 8 L82 11 L83 15 L80 12 L77 15 L78 11 L75 8 L79 8Z" fill="url(#fg3)" opacity="0.95"></path><circle cx="45" cy="17" fill="#E8C96A" opacity="0.6" r="1.5"></circle><circle cx="115" cy="17" fill="#E8C96A" opacity="0.6" r="1.5"></circle></svg>
+</div>
+<div class="lhl-logo">
+<svg aria-label="lhl lettermark" fill="none" height="64" viewbox="0 0 80 64" width="80" xmlns="http://www.w3.org/2000/svg"><defs><lineargradient id="lg3" x1="0%" x2="0%" y1="0%" y2="100%"><stop offset="0%" stop-color="#F5DFA0"></stop><stop offset="45%" stop-color="#E8C96A"></stop><stop offset="100%" stop-color="#C9A84C"></stop></lineargradient></defs><path d="M40 8 C35 8 28 6 22 8 C16 10 12 8 8 10" fill="none" stroke="url(#lg3)" stroke-linecap="round" stroke-width="1"></path><path d="M40 8 C45 8 52 6 58 8 C64 10 68 8 72 10" fill="none" stroke="url(#lg3)" stroke-linecap="round" stroke-width="1"></path><ellipse cx="22" cy="7" fill="url(#lg3)" opacity="0.9" rx="3" ry="1.5" transform="rotate(-20 22 7)"></ellipse><ellipse cx="14" cy="9" fill="url(#lg3)" opacity="0.8" rx="2.5" ry="1.2" transform="rotate(-30 14 9)"></ellipse><ellipse cx="56" cy="7" fill="url(#lg3)" opacity="0.9" rx="3" ry="1.5" transform="rotate(20 56 7)"></ellipse><ellipse cx="65" cy="8" fill="url(#lg3)" opacity="0.8" rx="2.5" ry="1.2" transform="rotate(15 65 8)"></ellipse><circle cx="72" cy="10" fill="url(#lg3)" opacity="0.9" r="2"></circle><circle cx="72" cy="7.5" fill="url(#lg3)" opacity="0.7" r="1"></circle><circle cx="74" cy="10" fill="url(#lg3)" opacity="0.7" r="1"></circle><circle cx="72" cy="12" fill="url(#lg3)" opacity="0.7" r="1"></circle><circle cx="70" cy="10" fill="url(#lg3)" opacity="0.7" r="1"></circle><rect fill="url(#lg3)" height="36" rx="2.5" width="5" x="8" y="14"></rect><rect fill="url(#lg3)" height="2" rx="1" width="9" x="6" y="48"></rect><rect fill="url(#lg3)" height="36" rx="2.5" width="5" x="67" y="14"></rect><rect fill="url(#lg3)" height="2" rx="1" width="9" x="65" y="48"></rect><rect fill="url(#lg3)" height="36" rx="2.5" width="5" x="29" y="14"></rect><path d="M34 32 Q34 22 39 20 Q44 18 47 22 Q50 26 50 32 L50 50 L55 50 L55 32 Q55 18 46 14 Q37 10 34 24Z" fill="url(#lg3)"></path><rect fill="url(#lg3)" height="2" rx="1" width="9" x="50" y="48"></rect></svg>
+</div>
+<div class="header-script">latter house life</div>
+<div class="header-subtitle">Latter House Life</div>
+<div class="header-date" id="month-display">May 2026</div>
+</div>
+<!-- Month Navigation -->
+<div class="month-nav">
+<button aria-label="Previous month" class="nav-arrow">
+<svg fill="none" height="16" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24" width="16"><polyline points="15,18 9,12 15,6"></polyline></svg>
+</button>
+<span class="month-label" id="month-nav-label">May 2026</span>
+<button aria-label="Next month" class="nav-arrow">
+<svg fill="none" height="16" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24" width="16"><polyline points="9,18 15,12 9,6"></polyline></svg>
+</button>
+</div>
+<!-- Calendar Grid -->
+<div class="cal-grid">
+<div class="cal-header" id="cal-header"><div class="cal-weekday">S</div><div class="cal-weekday">M</div><div class="cal-weekday">T</div><div class="cal-weekday">W</div><div class="cal-weekday">T</div><div class="cal-weekday">F</div><div class="cal-weekday">S</div></div>
+<div class="cal-days" id="cal-days"><div class="cal-day other-month"><div class="cal-day-num">26</div></div><div class="cal-day other-month"><div class="cal-day-num">27</div></div><div class="cal-day other-month"><div class="cal-day-num">28</div></div><div class="cal-day other-month"><div class="cal-day-num">29</div></div><div class="cal-day other-month"><div class="cal-day-num">30</div></div><div class="cal-day today"><div class="cal-day-num">1</div></div><div class="cal-day"><div class="cal-day-num">2</div></div><div class="cal-day"><div class="cal-day-num">3</div></div><div class="cal-day"><div class="cal-day-num">4</div></div><div class="cal-day"><div class="cal-day-num">5</div></div><div class="cal-day"><div class="cal-day-num">6</div></div><div class="cal-day"><div class="cal-day-num">7</div></div><div class="cal-day"><div class="cal-day-num">8</div></div><div class="cal-day"><div class="cal-day-num">9</div></div><div class="cal-day"><div class="cal-day-num">10</div></div><div class="cal-day"><div class="cal-day-num">11</div></div><div class="cal-day"><div class="cal-day-num">12</div></div><div class="cal-day"><div class="cal-day-num">13</div></div><div class="cal-day"><div class="cal-day-num">14</div></div><div class="cal-day"><div class="cal-day-num">15</div></div><div class="cal-day"><div class="cal-day-num">16</div></div><div class="cal-day"><div class="cal-day-num">17</div></div><div class="cal-day"><div class="cal-day-num">18</div></div><div class="cal-day"><div class="cal-day-num">19</div></div><div class="cal-day"><div class="cal-day-num">20</div></div><div class="cal-day"><div class="cal-day-num">21</div></div><div class="cal-day"><div class="cal-day-num">22</div></div><div class="cal-day"><div class="cal-day-num">23</div></div><div class="cal-day"><div class="cal-day-num">24</div></div><div class="cal-day"><div class="cal-day-num">25</div></div><div class="cal-day"><div class="cal-day-num">26</div></div><div class="cal-day"><div class="cal-day-num">27</div></div><div class="cal-day"><div class="cal-day-num">28</div></div><div class="cal-day"><div class="cal-day-num">29</div></div><div class="cal-day"><div class="cal-day-num">30</div></div><div class="cal-day"><div class="cal-day-num">31</div></div><div class="cal-day other-month"><div class="cal-day-num">1</div></div><div class="cal-day other-month"><div class="cal-day-num">2</div></div><div class="cal-day other-month"><div class="cal-day-num">3</div></div><div class="cal-day other-month"><div class="cal-day-num">4</div></div><div class="cal-day other-month"><div class="cal-day-num">5</div></div><div class="cal-day other-month"><div class="cal-day-num">6</div></div></div>
+</div>
+<div class="page-content" style="padding-top:0;">
+<div class="card card-gold">
+<span class="section-label">Monthly Theme / Scripture</span>
+<input class="field-input" id="month-theme" placeholder="Your theme or anchor scripture for this month..." type="text"/>
+</div>
+<div class="card">
+<span class="section-label">Monthly Goals</span>
+<div class="numbered-goal"><div class="goal-number">1</div><input class="field-input" id="month-goal-1" placeholder="Goal for this month..." type="text"/></div>
+<div class="numbered-goal"><div class="goal-number">2</div><input class="field-input" id="month-goal-2" placeholder="Goal for this month..." type="text"/></div>
+<div class="numbered-goal"><div class="goal-number">3</div><input class="field-input" id="month-goal-3" placeholder="Goal for this month..." type="text"/></div>
+<div class="numbered-goal"><div class="goal-number">4</div><input class="field-input" id="month-goal-4" placeholder="Goal for this month..." type="text"/></div>
+<div class="numbered-goal"><div class="goal-number">5</div><input class="field-input" id="month-goal-5" placeholder="Goal for this month..." type="text"/></div>
+<div style="margin-top:10px;">
+<button class="btn-ask-ai">
+<svg fill="none" height="13" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="13"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4M12 16h.01"></path></svg>
+            Ask for Help Deciding
+          </button>
+</div>
+</div>
+<div class="card">
+<span class="section-label">Monthly Gratitude</span>
+<div class="labeled-row"><div class="bullet-icon">✦</div><input class="field-input" id="month-grat-1" placeholder="This month I am grateful for..." type="text"/></div>
+<div class="labeled-row"><div class="bullet-icon">✦</div><input class="field-input" id="month-grat-2" placeholder="This month I am grateful for..." type="text"/></div>
+<div class="labeled-row"><div class="bullet-icon">✦</div><input class="field-input" id="month-grat-3" placeholder="This month I am grateful for..." type="text"/></div>
+</div>
+<!-- This Month's Appointments -->
+<div class="card">
+<span class="section-label">This Month's Appointments</span>
+<div id="month-appts-container">
+<div class="labeled-row" style="gap:8px;align-items:center;">
+<input class="field-input" placeholder="Date &amp; time..." style="width:40%;min-width:0;" type="text"/>
+<input class="field-input" placeholder="Appointment / Notes..." style="flex:1;min-width:0;" type="text"/>
+</div>
+<div class="labeled-row" style="gap:8px;align-items:center;">
+<input class="field-input" placeholder="Date &amp; time..." style="width:40%;min-width:0;" type="text"/>
+<input class="field-input" placeholder="Appointment / Notes..." style="flex:1;min-width:0;" type="text"/>
+</div>
+<div class="labeled-row" style="gap:8px;align-items:center;">
+<input class="field-input" placeholder="Date &amp; time..." style="width:40%;min-width:0;" type="text"/>
+<input class="field-input" placeholder="Appointment / Notes..." style="flex:1;min-width:0;" type="text"/>
+</div>
+<div class="labeled-row" style="gap:8px;align-items:center;">
+<input class="field-input" placeholder="Date &amp; time..." style="width:40%;min-width:0;" type="text"/>
+<input class="field-input" placeholder="Appointment / Notes..." style="flex:1;min-width:0;" type="text"/>
+</div>
+<div class="labeled-row" style="gap:8px;align-items:center;">
+<input class="field-input" placeholder="Date &amp; time..." style="width:40%;min-width:0;" type="text"/>
+<input class="field-input" placeholder="Appointment / Notes..." style="flex:1;min-width:0;" type="text"/>
+</div>
+<div class="labeled-row" style="gap:8px;align-items:center;">
+<input class="field-input" placeholder="Date &amp; time..." style="width:40%;min-width:0;" type="text"/>
+<input class="field-input" placeholder="Appointment / Notes..." style="flex:1;min-width:0;" type="text"/>
+</div>
+</div>
+<button class="add-task-btn" style="margin-top:8px;">+ Add Appointment</button>
+</div>
+<div class="card">
+<span class="section-label">Ministry Notes</span>
+<textarea class="field-textarea" id="month-ministry" placeholder="Ministry activities, insights, kingdom assignments..." rows="4"></textarea>
+</div>
+<div class="action-row">
+<button class="btn btn-primary btn-full">
+<svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17,21 17,13 7,13 7,21"></polyline><polyline points="7,3 7,8 15,8"></polyline></svg>
+          Save This Month
+        </button>
+</div>
+<div class="page-footer">"This is the day that the Lord has made; let us rejoice." — Psalm 118:24</div>
+</div>
+</section>
+<!-- ===== PAGE 4: YEAR ===== -->
+<section class="page" id="page-year">
+<div class="page-header">
+<div class="header-flourish">
+<svg fill="none" height="20" viewbox="0 0 80 28" width="60"><path d="M40 4 C30 4, 10 10, 4 18 C10 12, 25 8, 40 8 C55 8, 70 12, 76 18 C70 10, 50 4, 40 4Z" fill="url(#fg4)" opacity="0.8"></path><defs><lineargradient id="fg4" x1="0%" x2="100%" y1="0%" y2="0%"><stop offset="0%" stop-color="#C9A84C"></stop><stop offset="50%" stop-color="#F5DFA0"></stop><stop offset="100%" stop-color="#C9A84C"></stop></lineargradient></defs></svg>
+</div>
+<div class="lhl-logo">
+<svg aria-label="lhl lettermark" fill="none" height="64" viewbox="0 0 80 64" width="80" xmlns="http://www.w3.org/2000/svg"><defs><lineargradient id="lg4" x1="0%" x2="0%" y1="0%" y2="100%"><stop offset="0%" stop-color="#F5DFA0"></stop><stop offset="45%" stop-color="#E8C96A"></stop><stop offset="100%" stop-color="#C9A84C"></stop></lineargradient></defs><path d="M40 8 C35 8 28 6 22 8 C16 10 12 8 8 10" fill="none" stroke="url(#lg4)" stroke-linecap="round" stroke-width="1"></path><path d="M40 8 C45 8 52 6 58 8 C64 10 68 8 72 10" fill="none" stroke="url(#lg4)" stroke-linecap="round" stroke-width="1"></path><ellipse cx="22" cy="7" fill="url(#lg4)" opacity="0.9" rx="3" ry="1.5" transform="rotate(-20 22 7)"></ellipse><ellipse cx="14" cy="9" fill="url(#lg4)" opacity="0.8" rx="2.5" ry="1.2" transform="rotate(-30 14 9)"></ellipse><ellipse cx="56" cy="7" fill="url(#lg4)" opacity="0.9" rx="3" ry="1.5" transform="rotate(20 56 7)"></ellipse><ellipse cx="65" cy="8" fill="url(#lg4)" opacity="0.8" rx="2.5" ry="1.2" transform="rotate(15 65 8)"></ellipse><circle cx="72" cy="10" fill="url(#lg4)" opacity="0.9" r="2"></circle><circle cx="72" cy="7.5" fill="url(#lg4)" opacity="0.7" r="1"></circle><circle cx="74" cy="10" fill="url(#lg4)" opacity="0.7" r="1"></circle><circle cx="72" cy="12" fill="url(#lg4)" opacity="0.7" r="1"></circle><circle cx="70" cy="10" fill="url(#lg4)" opacity="0.7" r="1"></circle><rect fill="url(#lg4)" height="36" rx="2.5" width="5" x="8" y="14"></rect><rect fill="url(#lg4)" height="2" rx="1" width="9" x="6" y="48"></rect><rect fill="url(#lg4)" height="36" rx="2.5" width="5" x="67" y="14"></rect><rect fill="url(#lg4)" height="2" rx="1" width="9" x="65" y="48"></rect><rect fill="url(#lg4)" height="36" rx="2.5" width="5" x="29" y="14"></rect><path d="M34 32 Q34 22 39 20 Q44 18 47 22 Q50 26 50 32 L50 50 L55 50 L55 32 Q55 18 46 14 Q37 10 34 24Z" fill="url(#lg4)"></path><rect fill="url(#lg4)" height="2" rx="1" width="9" x="50" y="48"></rect></svg>
+</div>
+<div class="header-script">latter house life</div>
+<div class="header-subtitle">Latter House Life</div>
+<div class="header-date" id="year-display">2026</div>
+</div>
+<!-- Year Navigation -->
+<div class="month-nav">
+<button aria-label="Previous year" class="nav-arrow">
+<svg fill="none" height="16" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24" width="16"><polyline points="15,18 9,12 15,6"></polyline></svg>
+</button>
+<span class="month-label" id="year-nav-label">2026</span>
+<button aria-label="Next year" class="nav-arrow">
+<svg fill="none" height="16" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24" width="16"><polyline points="9,18 15,12 9,6"></polyline></svg>
+</button>
+</div>
+<div class="page-content">
+<!-- Word for the Year -->
+<div class="card card-gold">
+<span class="section-label">Word for the Year</span>
+<input class="field-input" id="year-word" placeholder="Your divine word for this year..." style="font-size:var(--text-base); font-weight:700;" type="text"/>
+<div class="word-display" id="year-word-display"></div>
+<div style="margin-top:10px;">
+<button class="btn-ask-ai">
+<svg fill="none" height="13" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="13"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4M12 16h.01"></path></svg>
+            Help Me Find My Word
+          </button>
+</div>
+</div>
+<!-- Scripture for the Year -->
+<div class="card">
+<span class="section-label">Scripture for the Year</span>
+<textarea class="field-textarea" id="year-scripture" placeholder="The verse God has given you for this year..." rows="3"></textarea>
+</div>
+<!-- 12-Month Goals Grid -->
+<div class="card">
+<span class="section-label">12-Month Goals</span>
+<div class="month-goals-grid" id="year-month-goals"><div class="month-goal-card"><div class="month-goal-name">Jan</div><textarea class="field-textarea" placeholder="Goal for January..." style="font-size: var(--text-xs); min-height: 56px;"></textarea></div><div class="month-goal-card"><div class="month-goal-name">Feb</div><textarea class="field-textarea" placeholder="Goal for February..." style="font-size: var(--text-xs); min-height: 56px;"></textarea></div><div class="month-goal-card"><div class="month-goal-name">Mar</div><textarea class="field-textarea" placeholder="Goal for March..." style="font-size: var(--text-xs); min-height: 56px;"></textarea></div><div class="month-goal-card"><div class="month-goal-name">Apr</div><textarea class="field-textarea" placeholder="Goal for April..." style="font-size: var(--text-xs); min-height: 56px;"></textarea></div><div class="month-goal-card"><div class="month-goal-name">May</div><textarea class="field-textarea" placeholder="Goal for May..." style="font-size: var(--text-xs); min-height: 56px;"></textarea></div><div class="month-goal-card"><div class="month-goal-name">Jun</div><textarea class="field-textarea" placeholder="Goal for June..." style="font-size: var(--text-xs); min-height: 56px;"></textarea></div><div class="month-goal-card"><div class="month-goal-name">Jul</div><textarea class="field-textarea" placeholder="Goal for July..." style="font-size: var(--text-xs); min-height: 56px;"></textarea></div><div class="month-goal-card"><div class="month-goal-name">Aug</div><textarea class="field-textarea" placeholder="Goal for August..." style="font-size: var(--text-xs); min-height: 56px;"></textarea></div><div class="month-goal-card"><div class="month-goal-name">Sep</div><textarea class="field-textarea" placeholder="Goal for September..." style="font-size: var(--text-xs); min-height: 56px;"></textarea></div><div class="month-goal-card"><div class="month-goal-name">Oct</div><textarea class="field-textarea" placeholder="Goal for October..." style="font-size: var(--text-xs); min-height: 56px;"></textarea></div><div class="month-goal-card"><div class="month-goal-name">Nov</div><textarea class="field-textarea" placeholder="Goal for November..." style="font-size: var(--text-xs); min-height: 56px;"></textarea></div><div class="month-goal-card"><div class="month-goal-name">Dec</div><textarea class="field-textarea" placeholder="Goal for December..." style="font-size: var(--text-xs); min-height: 56px;"></textarea></div></div>
+</div>
+<!-- Yearly Pillars -->
+<div class="card">
+<span class="section-label">Yearly Pillars</span>
+<div class="year-pillars">
+<div class="pillar-card">
+<div class="pillar-icon">🙏</div>
+<div class="pillar-name">Spiritual</div>
+<textarea class="field-textarea" id="pillar-spiritual" placeholder="Your spiritual intentions..." rows="3" style="font-size:var(--text-xs);"></textarea>
+</div>
+<div class="pillar-card">
+<div class="pillar-icon">🌱</div>
+<div class="pillar-name">Personal</div>
+<textarea class="field-textarea" id="pillar-personal" placeholder="Personal growth goals..." rows="3" style="font-size:var(--text-xs);"></textarea>
+</div>
+<div class="pillar-card">
+<div class="pillar-icon">🏡</div>
+<div class="pillar-name">Family</div>
+<textarea class="field-textarea" id="pillar-family" placeholder="Family vision and goals..." rows="3" style="font-size:var(--text-xs);"></textarea>
+</div>
+<div class="pillar-card">
+<div class="pillar-icon">👑</div>
+<div class="pillar-name">Kingdom</div>
+<textarea class="field-textarea" id="pillar-kingdom" placeholder="Kingdom assignments..." rows="3" style="font-size:var(--text-xs);"></textarea>
+</div>
+</div>
+</div>
+<!-- Year-End Reflection -->
+<div class="card">
+<span class="section-label">Year-End Reflection</span>
+<textarea class="field-textarea" id="year-reflection" placeholder="As this year closes, what has God written on your heart? Where have you grown? What are you carrying into the next season?" rows="6"></textarea>
+</div>
+<div class="action-row">
+<button class="btn btn-primary btn-full">
+<svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17,21 17,13 7,13 7,21"></polyline><polyline points="7,3 7,8 15,8"></polyline></svg>
+          Save This Year
+        </button>
+</div>
+<div class="page-footer">"Delight yourself in the Lord, and he will give you the desires of your heart." — Psalm 37:4</div>
+</div>
+</section>
+<!-- ===== PAGE 5: TRACK ===== -->
+<section class="page" id="page-track">
+<div class="page-header">
+<div class="header-flourish">
+<svg fill="none" height="20" viewbox="0 0 80 28" width="60"><path d="M40 4 C30 4, 10 10, 4 18 C10 12, 25 8, 40 8 C55 8, 70 12, 76 18 C70 10, 50 4, 40 4Z" fill="url(#fg5)" opacity="0.8"></path><defs><lineargradient id="fg5" x1="0%" x2="100%" y1="0%" y2="0%"><stop offset="0%" stop-color="#C9A84C"></stop><stop offset="50%" stop-color="#F5DFA0"></stop><stop offset="100%" stop-color="#C9A84C"></stop></lineargradient></defs></svg>
+</div>
+<div class="lhl-logo">
+<svg aria-label="lhl lettermark" fill="none" height="64" viewbox="0 0 80 64" width="80" xmlns="http://www.w3.org/2000/svg"><defs><lineargradient id="lg5" x1="0%" x2="0%" y1="0%" y2="100%"><stop offset="0%" stop-color="#F5DFA0"></stop><stop offset="45%" stop-color="#E8C96A"></stop><stop offset="100%" stop-color="#C9A84C"></stop></lineargradient></defs><path d="M40 8 C35 8 28 6 22 8 C16 10 12 8 8 10" fill="none" stroke="url(#lg5)" stroke-linecap="round" stroke-width="1"></path><path d="M40 8 C45 8 52 6 58 8 C64 10 68 8 72 10" fill="none" stroke="url(#lg5)" stroke-linecap="round" stroke-width="1"></path><ellipse cx="22" cy="7" fill="url(#lg5)" opacity="0.9" rx="3" ry="1.5" transform="rotate(-20 22 7)"></ellipse><ellipse cx="14" cy="9" fill="url(#lg5)" opacity="0.8" rx="2.5" ry="1.2" transform="rotate(-30 14 9)"></ellipse><ellipse cx="56" cy="7" fill="url(#lg5)" opacity="0.9" rx="3" ry="1.5" transform="rotate(20 56 7)"></ellipse><ellipse cx="65" cy="8" fill="url(#lg5)" opacity="0.8" rx="2.5" ry="1.2" transform="rotate(15 65 8)"></ellipse><circle cx="72" cy="10" fill="url(#lg5)" opacity="0.9" r="2"></circle><circle cx="72" cy="7.5" fill="url(#lg5)" opacity="0.7" r="1"></circle><circle cx="74" cy="10" fill="url(#lg5)" opacity="0.7" r="1"></circle><circle cx="72" cy="12" fill="url(#lg5)" opacity="0.7" r="1"></circle><circle cx="70" cy="10" fill="url(#lg5)" opacity="0.7" r="1"></circle><rect fill="url(#lg5)" height="36" rx="2.5" width="5" x="8" y="14"></rect><rect fill="url(#lg5)" height="2" rx="1" width="9" x="6" y="48"></rect><rect fill="url(#lg5)" height="36" rx="2.5" width="5" x="67" y="14"></rect><rect fill="url(#lg5)" height="2" rx="1" width="9" x="65" y="48"></rect><rect fill="url(#lg5)" height="36" rx="2.5" width="5" x="29" y="14"></rect><path d="M34 32 Q34 22 39 20 Q44 18 47 22 Q50 26 50 32 L50 50 L55 50 L55 32 Q55 18 46 14 Q37 10 34 24Z" fill="url(#lg5)"></path><rect fill="url(#lg5)" height="2" rx="1" width="9" x="50" y="48"></rect></svg>
+</div>
+<div class="header-script">latter house life</div>
+<div class="header-subtitle">Latter House Life</div>
+</div>
+<div class="page-content">
+<!-- Tracker Tab Nav -->
+<div style="display:flex;gap:6px;padding:0 0 var(--space-3);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;">
+<button class="tracker-tab active" id="tab-habits">Habits</button>
+<button class="tracker-tab" id="tab-meds">Meds</button>
+<button class="tracker-tab" id="tab-health">Health</button>
+<button class="tracker-tab" id="tab-finance">Finances</button>
+</div>
+<!-- HABITS TAB (existing habit/goal/tone/giving content) -->
+<div class="tracker-panel" id="tracker-habits">
+<!-- Habit Tracker -->
+<div class="tracker-section open" id="tracker-habit">
+<div class="tracker-header">
+<div class="tracker-header-left">
+<svg fill="none" height="18" stroke="currentColor" stroke-width="2" style="color:var(--forest)" viewbox="0 0 24 24" width="18"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+<span class="tracker-title">Habit Tracker</span>
+</div>
+<div class="tracker-toggle">
+<svg fill="none" height="14" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24" width="14"><polyline points="6,9 12,15 18,9"></polyline></svg>
+</div>
+</div>
+<div class="tracker-body">
+<div class="habit-grid">
+<table class="habit-table" id="habit-table"><thead><tr><th class="habit-name-col">Habit</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th><th>17</th><th>18</th><th>19</th><th>20</th><th>21</th><th>22</th><th>23</th><th>24</th><th>25</th><th>26</th><th>27</th><th>28</th><th>29</th><th>30</th><th>31</th></tr></thead><tbody><tr><td class="habit-name-col"><input class="habit-name-input" type="text"/></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td></tr><tr><td class="habit-name-col"><input class="habit-name-input" type="text"/></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td></tr><tr><td class="habit-name-col"><input class="habit-name-input" type="text"/></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td></tr><tr><td class="habit-name-col"><input class="habit-name-input" type="text"/></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td></tr><tr><td class="habit-name-col"><input class="habit-name-input" type="text"/></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td></tr><tr><td class="habit-name-col"><input class="habit-name-input" type="text"/></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td></tr><tr><td class="habit-name-col"><input class="habit-name-input" type="text"/></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td></tr><tr><td class="habit-name-col"><input class="habit-name-input" type="text"/></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td><td><div class="habit-cb"><div class="habit-cb-inner"></div></div></td></tr></tbody></table>
+</div>
+</div>
+</div>
+<!-- Goal Tracker -->
+<div class="tracker-section" id="tracker-goal">
+<div class="tracker-header">
+<div class="tracker-header-left">
+<svg fill="none" height="18" stroke="currentColor" stroke-width="2" style="color:var(--forest)" viewbox="0 0 24 24" width="18"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+<span class="tracker-title">Goal Tracker</span>
+</div>
+<div class="tracker-toggle">
+<svg fill="none" height="14" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24" width="14"><polyline points="6,9 12,15 18,9"></polyline></svg>
+</div>
+</div>
+<div class="tracker-body">
+<div class="goal-cards" id="goal-cards"><div class="goal-card"><input class="goal-title-input" placeholder="Goal 1..." type="text"/><input class="goal-date-input" type="date"/><div class="progress-bar-wrap"><div class="progress-bar-fill" style="width: 0%;"></div></div><div class="progress-controls"><button class="progress-btn">−</button><span class="progress-pct">0%</span><button class="progress-btn">+</button></div><div class="goal-status status-not-started">Not Started</div></div><div class="goal-card"><input class="goal-title-input" placeholder="Goal 2..." type="text"/><input class="goal-date-input" type="date"/><div class="progress-bar-wrap"><div class="progress-bar-fill" style="width: 0%;"></div></div><div class="progress-controls"><button class="progress-btn">−</button><span class="progress-pct">0%</span><button class="progress-btn">+</button></div><div class="goal-status status-not-started">Not Started</div></div><div class="goal-card"><input class="goal-title-input" placeholder="Goal 3..." type="text"/><input class="goal-date-input" type="date"/><div class="progress-bar-wrap"><div class="progress-bar-fill" style="width: 0%;"></div></div><div class="progress-controls"><button class="progress-btn">−</button><span class="progress-pct">0%</span><button class="progress-btn">+</button></div><div class="goal-status status-not-started">Not Started</div></div><div class="goal-card"><input class="goal-title-input" placeholder="Goal 4..." type="text"/><input class="goal-date-input" type="date"/><div class="progress-bar-wrap"><div class="progress-bar-fill" style="width: 0%;"></div></div><div class="progress-controls"><button class="progress-btn">−</button><span class="progress-pct">0%</span><button class="progress-btn">+</button></div><div class="goal-status status-not-started">Not Started</div></div><div class="goal-card"><input class="goal-title-input" placeholder="Goal 5..." type="text"/><input class="goal-date-input" type="date"/><div class="progress-bar-wrap"><div class="progress-bar-fill" style="width: 0%;"></div></div><div class="progress-controls"><button class="progress-btn">−</button><span class="progress-pct">0%</span><button class="progress-btn">+</button></div><div class="goal-status status-not-started">Not Started</div></div><div class="goal-card"><input class="goal-title-input" placeholder="Goal 6..." type="text"/><input class="goal-date-input" type="date"/><div class="progress-bar-wrap"><div class="progress-bar-fill" style="width: 0%;"></div></div><div class="progress-controls"><button class="progress-btn">−</button><span class="progress-pct">0%</span><button class="progress-btn">+</button></div><div class="goal-status status-not-started">Not Started</div></div></div>
+</div>
+</div>
+<!-- Spiritual Tone -->
+<div class="tracker-section" id="tracker-tone">
+<div class="tracker-header">
+<div class="tracker-header-left">
+<svg fill="none" height="18" stroke="currentColor" stroke-width="2" style="color:var(--forest)" viewbox="0 0 24 24" width="18"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2z"></path><path d="M12 6v6l4 2"></path></svg>
+<span class="tracker-title">Spiritual Tone</span>
+</div>
+<div class="tracker-toggle">
+<svg fill="none" height="14" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24" width="14"><polyline points="6,9 12,15 18,9"></polyline></svg>
+</div>
+</div>
+<div class="tracker-body">
+<div class="tone-legend">
+<div class="tone-legend-item">🌱 Growing</div>
+<div class="tone-legend-item">☀️ Radiant</div>
+<div class="tone-legend-item">🌧️ Struggling</div>
+<div class="tone-legend-item">🙏 Surrendered</div>
+<div class="tone-legend-item">🔥 On Fire</div>
+</div>
+<div id="tone-rows"><div class="tone-row"><div class="tone-day">Sat</div><div class="tone-emojis"><button class="tone-btn" title="Growing">🌱</button><button class="tone-btn" title="Radiant">☀️</button><button class="tone-btn" title="Struggling">🌧️</button><button class="tone-btn" title="Surrendered">🙏</button><button class="tone-btn" title="On Fire">🔥</button></div></div><div class="tone-row"><div class="tone-day">Sun</div><div class="tone-emojis"><button class="tone-btn" title="Growing">🌱</button><button class="tone-btn" title="Radiant">☀️</button><button class="tone-btn" title="Struggling">🌧️</button><button class="tone-btn" title="Surrendered">🙏</button><button class="tone-btn" title="On Fire">🔥</button></div></div><div class="tone-row"><div class="tone-day">Mon</div><div class="tone-emojis"><button class="tone-btn" title="Growing">🌱</button><button class="tone-btn" title="Radiant">☀️</button><button class="tone-btn" title="Struggling">🌧️</button><button class="tone-btn" title="Surrendered">🙏</button><button class="tone-btn" title="On Fire">🔥</button></div></div><div class="tone-row"><div class="tone-day">Tue</div><div class="tone-emojis"><button class="tone-btn" title="Growing">🌱</button><button class="tone-btn" title="Radiant">☀️</button><button class="tone-btn" title="Struggling">🌧️</button><button class="tone-btn" title="Surrendered">🙏</button><button class="tone-btn" title="On Fire">🔥</button></div></div><div class="tone-row"><div class="tone-day">Wed</div><div class="tone-emojis"><button class="tone-btn" title="Growing">🌱</button><button class="tone-btn" title="Radiant">☀️</button><button class="tone-btn" title="Struggling">🌧️</button><button class="tone-btn" title="Surrendered">🙏</button><button class="tone-btn" title="On Fire">🔥</button></div></div><div class="tone-row"><div class="tone-day">Thu</div><div class="tone-emojis"><button class="tone-btn" title="Growing">🌱</button><button class="tone-btn" title="Radiant">☀️</button><button class="tone-btn" title="Struggling">🌧️</button><button class="tone-btn" title="Surrendered">🙏</button><button class="tone-btn" title="On Fire">🔥</button></div></div><div class="tone-row"><div class="tone-day" style="color: var(--forest);">Today</div><div class="tone-emojis"><button class="tone-btn" title="Growing">🌱</button><button class="tone-btn" title="Radiant">☀️</button><button class="tone-btn" title="Struggling">🌧️</button><button class="tone-btn" title="Surrendered">🙏</button><button class="tone-btn" title="On Fire">🔥</button></div></div></div>
+</div>
+</div>
+<!-- Giving Tracker -->
+<div class="tracker-section" id="tracker-giving">
+<div class="tracker-header">
+<div class="tracker-header-left">
+<svg fill="none" height="18" stroke="currentColor" stroke-width="2" style="color:var(--forest)" viewbox="0 0 24 24" width="18"><path d="M12 2L12 22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+<span class="tracker-title">Giving Tracker</span>
+</div>
+<div class="tracker-toggle">
+<svg fill="none" height="14" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24" width="14"><polyline points="6,9 12,15 18,9"></polyline></svg>
+</div>
+</div>
+<div class="tracker-body">
+<div class="giving-month">
+<label class="section-label" style="margin:0;">Month:</label>
+<select class="month-select" id="giving-month-select">
+<option value="0">January</option><option value="1">February</option><option value="2">March</option>
+<option value="3">April</option><option value="4">May</option><option value="5">June</option>
+<option value="6">July</option><option value="7">August</option><option value="8">September</option>
+<option value="9">October</option><option value="10">November</option><option value="11">December</option>
+</select>
+</div>
+<div class="giving-row" style="font-size:var(--text-xs);color:var(--color-text-faint);font-weight:700;padding-bottom:4px;border-bottom:1px solid var(--color-border);margin-bottom:var(--space-2);">
+<span>Category</span><span>Amount ($)</span><span>Note</span>
+</div>
+<div class="giving-row">
+<span class="giving-label">Tithe</span>
+<input class="giving-input" id="giving-tithe" min="0" placeholder="0.00" step="0.01" type="number"/>
+<input class="giving-input" id="giving-tithe-note" placeholder="Note..." type="text"/>
+</div>
+<div class="giving-row">
+<span class="giving-label">Offering</span>
+<input class="giving-input" id="giving-offering" min="0" placeholder="0.00" step="0.01" type="number"/>
+<input class="giving-input" id="giving-offering-note" placeholder="Note..." type="text"/>
+</div>
+<div class="giving-row">
+<span class="giving-label">Missions</span>
+<input class="giving-input" id="giving-missions" min="0" placeholder="0.00" step="0.01" type="number"/>
+<input class="giving-input" id="giving-missions-note" placeholder="Note..." type="text"/>
+</div>
+<div class="giving-row">
+<span class="giving-label">Other</span>
+<input class="giving-input" id="giving-other" min="0" placeholder="0.00" step="0.01" type="number"/>
+<input class="giving-input" id="giving-other-note" placeholder="Note..." type="text"/>
+</div>
+<div class="giving-total">
+<span class="giving-total-label">Total Given</span>
+<span class="giving-total-amount" id="giving-total-display">$0.00</span>
+</div>
+</div>
+</div>
+<div class="page-footer">"Now to him who is able to do immeasurably more than all we ask or imagine." — Ephesians 3:20</div>
+</div><!-- end tracker-habits -->
+<!-- MEDS TAB -->
+<div class="tracker-panel" id="tracker-meds" style="display:none;">
+<div class="card">
+<span class="section-label">My Medications</span>
+<p style="font-size:0.82rem;color:var(--color-text-faint);font-style:italic;margin-bottom:10px;">Track your daily medications. Check off each dose as you take it.</p>
+<div id="meds-list">
+<div class="med-row" style="border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-3);margin-bottom:var(--space-3);background:var(--color-surface-2);">
+<div style="display:flex;gap:8px;margin-bottom:8px;">
+<input class="field-input" placeholder="Medication name..." style="flex:2;" type="text"/>
+<input class="field-input" placeholder="Dose..." style="flex:1;" type="text"/>
+</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+<label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;"><input type="checkbox"/> AM</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;"><input type="checkbox"/> Noon</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;"><input type="checkbox"/> PM</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;"><input type="checkbox"/> Bedtime</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;"><input type="checkbox"/> As needed</label>
+</div>
+<input class="field-input" placeholder="Notes (with food, refill date, etc.)..." style="width:100%;" type="text"/>
+</div>
+</div>
+<button class="btn btn-outline btn-full" style="margin-top:4px;">+ Add Medication</button>
+</div>
+<div class="card">
+<span class="section-label">Today's Mood &amp; Energy</span>
+<p style="font-size:0.82rem;color:var(--color-text-faint);font-style:italic;margin-bottom:10px;">Track how you're feeling each day so you can share patterns with your doctor.</p>
+<div style="margin-bottom:var(--space-3);">
+<div style="font-size:0.85rem;font-weight:600;margin-bottom:6px;color:var(--forest);">Mood (tap one)</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;">
+<button class="mood-pill">😊 Good</button>
+<button class="mood-pill">😐 Okay</button>
+<button class="mood-pill">😔 Low</button>
+<button class="mood-pill">😤 Anxious</button>
+<button class="mood-pill">😢 Sad</button>
+<button class="mood-pill">😴 Tired</button>
+</div>
+</div>
+<div style="margin-bottom:var(--space-3);">
+<div style="font-size:0.85rem;font-weight:600;margin-bottom:6px;color:var(--forest);">Energy Level</div>
+<input id="energy-slider" max="10" min="1" style="width:100%;accent-color:var(--teal);" type="range" value="5"/>
+<div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--color-text-faint);"><span>Low</span><span id="energy-val">5</span><span>High</span></div>
+</div>
+<div style="margin-bottom:var(--space-3);">
+<div style="font-size:0.85rem;font-weight:600;margin-bottom:6px;color:var(--forest);">Side Effects / Symptoms</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;">
+<label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;"><input type="checkbox"/> Nausea</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;"><input type="checkbox"/> Headache</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;"><input type="checkbox"/> Fatigue</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;"><input type="checkbox"/> Anxiety</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;"><input type="checkbox"/> Insomnia</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;"><input type="checkbox"/> Appetite change</label>
+<label style="display:flex;align-items:center;gap:4px;font-size:0.8rem;"><input type="checkbox"/> Brain fog</label>
+</div>
+</div>
+<textarea class="field-textarea" placeholder="Notes for doctor / anything to remember about today..." rows="3"></textarea>
+</div>
+<div class="card">
+<span class="section-label">Cycle Tracking</span>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:var(--space-3);">
+<div style="flex:1;min-width:120px;"><label style="font-size:0.82rem;color:var(--color-text-faint);">Cycle Day</label><input class="field-input" max="40" min="1" placeholder="e.g. 14" type="number"/></div>
+<div style="flex:1;min-width:120px;"><label style="font-size:0.82rem;color:var(--color-text-faint);">Flow</label>
+<select class="field-input"><option>—</option><option>Light</option><option>Medium</option><option>Heavy</option><option>Spotting</option><option>None</option></select>
+</div>
+</div>
+<textarea class="field-textarea" placeholder="Cramping, bloating, PMS notes, cycle symptoms..." rows="2"></textarea>
+</div>
+<div class="card">
+<span class="section-label">Doctor &amp; Refill Info</span>
+<div class="labeled-row"><div class="field-label">Doctor / Provider</div><input class="field-input" placeholder="Name &amp; specialty..." type="text"/></div>
+<div class="labeled-row"><div class="field-label">Next Appointment</div><input class="field-input" placeholder="Date &amp; time..." type="text"/></div>
+<div class="labeled-row"><div class="field-label">Next Refill Due</div><input class="field-input" placeholder="Medication &amp; date..." type="text"/></div>
+<textarea class="field-textarea" placeholder="Questions to ask at next appointment..." rows="3" style="margin-top:8px;"></textarea>
+</div>
+</div><!-- end tracker-meds -->
+<!-- HEALTH TAB -->
+<div class="tracker-panel" id="tracker-health" style="display:none;">
+<div class="card card-gold">
+<span class="section-label">My Health Profile</span>
+<p style="font-size:0.82rem;color:var(--color-text-faint);font-style:italic;margin-bottom:10px;">Keep your health info in one place so you're ready for any appointment.</p>
+<div class="labeled-row"><div class="field-label">Conditions I manage</div><textarea class="field-textarea" placeholder="e.g. Type 2 diabetes, hypertension, anxiety..." rows="2"></textarea></div>
+<div class="labeled-row"><div class="field-label">Allergies</div><input class="field-input" placeholder="Food, medication, environmental..." type="text"/></div>
+<div class="labeled-row"><div class="field-label">Blood Type</div><input class="field-input" placeholder="e.g. O+" type="text"/></div>
+<div class="labeled-row"><div class="field-label">Emergency Contact</div><input class="field-input" placeholder="Name &amp; phone..." type="text"/></div>
+</div>
+<div class="card">
+<span class="section-label">Daily Health Log</span>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:var(--space-3);">
+<div style="flex:1;min-width:130px;"><label style="font-size:0.82rem;color:var(--color-text-faint);">Blood Pressure</label><input class="field-input" placeholder="120/80" type="text"/></div>
+<div style="flex:1;min-width:130px;"><label style="font-size:0.82rem;color:var(--color-text-faint);">Blood Sugar</label><input class="field-input" placeholder="mg/dL" type="text"/></div>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:var(--space-3);">
+<div style="flex:1;min-width:130px;"><label style="font-size:0.82rem;color:var(--color-text-faint);">Weight</label><input class="field-input" placeholder="lbs" type="text"/></div>
+<div style="flex:1;min-width:130px;"><label style="font-size:0.82rem;color:var(--color-text-faint);">Hours of Sleep</label><input class="field-input" placeholder="7.5 hrs" type="text"/></div>
+</div>
+<div style="margin-bottom:var(--space-3);">
+<label style="font-size:0.82rem;color:var(--color-text-faint);">Water Today</label>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+<button class="water-cup">💧</button>
+<button class="water-cup">💧</button>
+<button class="water-cup">💧</button>
+<button class="water-cup">💧</button>
+<button class="water-cup">💧</button>
+<button class="water-cup">💧</button>
+<button class="water-cup">💧</button>
+<button class="water-cup">💧</button>
+</div>
+</div>
+<textarea class="field-textarea" placeholder="Symptoms today, how you felt, anything to note..." rows="3"></textarea>
+</div>
+<div class="card">
+<span class="section-label">Upcoming Appointments</span>
+<div id="health-appts-container">
+<div class="labeled-row" style="gap:8px;align-items:flex-start;flex-direction:column;">
+<div style="display:flex;gap:8px;width:100%;"><input class="field-input" placeholder="Date &amp; time..." style="width:40%;" type="text"/><input class="field-input" placeholder="Doctor / Type..." style="flex:1;" type="text"/></div>
+<input class="field-input" placeholder="Address / telehealth link..." style="width:100%;" type="text"/>
+<textarea class="field-textarea" placeholder="Questions / what to bring..." rows="2" style="width:100%;"></textarea>
+</div>
+</div>
+<button class="add-task-btn" style="margin-top:8px;">+ Add Appointment</button>
+</div>
+<div class="card">
+<span class="section-label">Symptom Tracker</span>
+<p style="font-size:0.82rem;color:var(--color-text-faint);font-style:italic;margin-bottom:10px;">Log symptoms over time so you can show your doctor patterns.</p>
+<div id="symptom-log">
+<div style="display:flex;gap:8px;margin-bottom:8px;">
+<input class="field-input" placeholder="Symptom..." style="flex:2;" type="text"/>
+<input class="field-input" placeholder="Severity 1-10" style="flex:1;" type="text"/>
+<input class="field-input" placeholder="Time..." style="flex:1;" type="text"/>
+</div>
+</div>
+<button class="add-task-btn" style="margin-top:4px;">+ Log Symptom</button>
+</div>
+</div><!-- end tracker-health -->
+<!-- FINANCE TAB -->
+<div class="tracker-panel" id="tracker-finance" style="display:none;">
+<div class="card card-gold">
+<span class="section-label">This Month's Money Focus</span>
+<textarea class="field-textarea" placeholder="What's your financial focus this month? Example: pay down credit card, save $200 toward emergency fund, get one new client..." rows="3"></textarea>
+<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+<div style="flex:1;min-width:120px;"><label style="font-size:0.82rem;color:var(--color-text-faint);">Total Income Goal</label><input class="field-input" placeholder="$0.00" type="text"/></div>
+<div style="flex:1;min-width:120px;"><label style="font-size:0.82rem;color:var(--color-text-faint);">Total Budget</label><input class="field-input" placeholder="$0.00" type="text"/></div>
+</div>
+</div>
+<div class="card">
+<span class="section-label">Income Log</span>
+<p style="font-size:0.82rem;color:var(--color-text-faint);font-style:italic;margin-bottom:8px;">Every dollar that came in this month.</p>
+<div id="income-log">
+<div style="display:grid;grid-template-columns:1fr 2fr 1fr;gap:6px;margin-bottom:6px;">
+<input class="field-input" placeholder="Date" type="text"/>
+<input class="field-input" placeholder="Source (job, Etsy, Craig...)" type="text"/>
+<input class="field-input" placeholder="$Amount" type="text"/>
+</div>
+<div style="display:grid;grid-template-columns:1fr 2fr 1fr;gap:6px;margin-bottom:6px;">
+<input class="field-input" placeholder="Date" type="text"/>
+<input class="field-input" placeholder="Source" type="text"/>
+<input class="field-input" placeholder="$Amount" type="text"/>
+</div>
+</div>
+<button class="add-task-btn" style="margin-top:4px;">+ Add Income</button>
+</div>
+<div class="card">
+<span class="section-label">Bills &amp; Must Pays</span>
+<p style="font-size:0.82rem;color:var(--color-text-faint);font-style:italic;margin-bottom:8px;">Check them off as you pay them.</p>
+<div id="bills-log">
+<div class="task-row check-item" style="display:grid;grid-template-columns:auto 2fr 1fr 1fr;gap:6px;align-items:center;border:none;padding:0;margin-bottom:6px;">
+<div class="check-dot"><div class="check-dot-inner"></div></div>
+<input class="field-input" placeholder="Bill name..." type="text"/>
+<input class="field-input" placeholder="Due date" type="text"/>
+<input class="field-input" placeholder="$Amount" type="text"/>
+</div>
+<div class="task-row check-item" style="display:grid;grid-template-columns:auto 2fr 1fr 1fr;gap:6px;align-items:center;border:none;padding:0;margin-bottom:6px;">
+<div class="check-dot"><div class="check-dot-inner"></div></div>
+<input class="field-input" placeholder="Bill name..." type="text"/>
+<input class="field-input" placeholder="Due date" type="text"/>
+<input class="field-input" placeholder="$Amount" type="text"/>
+</div>
+<div class="task-row check-item" style="display:grid;grid-template-columns:auto 2fr 1fr 1fr;gap:6px;align-items:center;border:none;padding:0;margin-bottom:6px;">
+<div class="check-dot"><div class="check-dot-inner"></div></div>
+<input class="field-input" placeholder="Bill name..." type="text"/>
+<input class="field-input" placeholder="Due date" type="text"/>
+<input class="field-input" placeholder="$Amount" type="text"/>
+</div>
+</div>
+<button class="add-task-btn" style="margin-top:4px;">+ Add Bill</button>
+</div>
+<div class="card">
+<span class="section-label">Business &amp; Side Income Builder</span>
+<p style="font-size:0.82rem;color:var(--color-text-faint);font-style:italic;margin-bottom:8px;">Track what you're building — Etsy shop, CFCustomWorks, planner sales, anything.</p>
+<div class="labeled-row"><div class="field-label">This month's business goal</div><input class="field-input" placeholder="e.g. 10 Etsy sales, launch new listing..." type="text"/></div>
+<div id="biz-log" style="margin-top:10px;">
+<div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:6px;margin-bottom:6px;">
+<input class="field-input" placeholder="Project / Product..." type="text"/>
+<input class="field-input" placeholder="Expense $" type="text"/>
+<input class="field-input" placeholder="Income $" type="text"/>
+</div>
+<div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:6px;margin-bottom:6px;">
+<input class="field-input" placeholder="Project / Product..." type="text"/>
+<input class="field-input" placeholder="Expense $" type="text"/>
+<input class="field-input" placeholder="Income $" type="text"/>
+</div>
+</div>
+<button class="add-task-btn" style="margin-top:4px;">+ Add Project</button>
+</div>
+<div class="card">
+<span class="section-label">Savings &amp; Dreams</span>
+<p style="font-size:0.82rem;color:var(--color-text-faint);font-style:italic;margin-bottom:8px;">What are you building toward? Name it, claim it.</p>
+<div id="savings-log">
+<div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:6px;margin-bottom:6px;">
+<input class="field-input" placeholder="Goal / Dream..." type="text"/>
+<input class="field-input" placeholder="Target $" type="text"/>
+<input class="field-input" placeholder="Saved so far $" type="text"/>
+</div>
+<div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:6px;margin-bottom:6px;">
+<input class="field-input" placeholder="Goal / Dream..." type="text"/>
+<input class="field-input" placeholder="Target $" type="text"/>
+<input class="field-input" placeholder="Saved so far $" type="text"/>
+</div>
+</div>
+<button class="add-task-btn" style="margin-top:4px;">+ Add Goal</button>
+<p style="font-size:0.82rem;font-style:italic;color:var(--gold-deep);margin-top:12px;text-align:center;">“The Lord will open to you his good treasury.” — Deuteronomy 28:12</p>
+</div>
+<div class="card">
+<span class="section-label">End-of-Month Reflection</span>
+<textarea class="field-textarea" placeholder="What did I handle well this month? Where do I need a change of habit? One financial step I'll take next month..." rows="4"></textarea>
+</div>
+</div><!-- end tracker-finance -->
+</div>
+</section>
+<!-- ===== PAGE 6: HISTORY ===== -->
+<section class="page" id="page-history">
+<div class="page-header">
+<div class="header-flourish">
+<svg fill="none" height="20" viewbox="0 0 80 28" width="60"><path d="M40 4 C30 4, 10 10, 4 18 C10 12, 25 8, 40 8 C55 8, 70 12, 76 18 C70 10, 50 4, 40 4Z" fill="url(#fg6)" opacity="0.8"></path><defs><lineargradient id="fg6" x1="0%" x2="100%" y1="0%" y2="0%"><stop offset="0%" stop-color="#C9A84C"></stop><stop offset="50%" stop-color="#F5DFA0"></stop><stop offset="100%" stop-color="#C9A84C"></stop></lineargradient></defs></svg>
+</div>
+<div class="lhl-logo">
+<svg aria-label="lhl lettermark" fill="none" height="64" viewbox="0 0 80 64" width="80" xmlns="http://www.w3.org/2000/svg"><defs><lineargradient id="lg6" x1="0%" x2="0%" y1="0%" y2="100%"><stop offset="0%" stop-color="#F5DFA0"></stop><stop offset="45%" stop-color="#E8C96A"></stop><stop offset="100%" stop-color="#C9A84C"></stop></lineargradient></defs><path d="M40 8 C35 8 28 6 22 8 C16 10 12 8 8 10" fill="none" stroke="url(#lg6)" stroke-linecap="round" stroke-width="1"></path><path d="M40 8 C45 8 52 6 58 8 C64 10 68 8 72 10" fill="none" stroke="url(#lg6)" stroke-linecap="round" stroke-width="1"></path><ellipse cx="22" cy="7" fill="url(#lg6)" opacity="0.9" rx="3" ry="1.5" transform="rotate(-20 22 7)"></ellipse><ellipse cx="14" cy="9" fill="url(#lg6)" opacity="0.8" rx="2.5" ry="1.2" transform="rotate(-30 14 9)"></ellipse><ellipse cx="56" cy="7" fill="url(#lg6)" opacity="0.9" rx="3" ry="1.5" transform="rotate(20 56 7)"></ellipse><ellipse cx="65" cy="8" fill="url(#lg6)" opacity="0.8" rx="2.5" ry="1.2" transform="rotate(15 65 8)"></ellipse><circle cx="72" cy="10" fill="url(#lg6)" opacity="0.9" r="2"></circle><circle cx="72" cy="7.5" fill="url(#lg6)" opacity="0.7" r="1"></circle><circle cx="74" cy="10" fill="url(#lg6)" opacity="0.7" r="1"></circle><circle cx="72" cy="12" fill="url(#lg6)" opacity="0.7" r="1"></circle><circle cx="70" cy="10" fill="url(#lg6)" opacity="0.7" r="1"></circle><rect fill="url(#lg6)" height="36" rx="2.5" width="5" x="8" y="14"></rect><rect fill="url(#lg6)" height="2" rx="1" width="9" x="6" y="48"></rect><rect fill="url(#lg6)" height="36" rx="2.5" width="5" x="67" y="14"></rect><rect fill="url(#lg6)" height="2" rx="1" width="9" x="65" y="48"></rect><rect fill="url(#lg6)" height="36" rx="2.5" width="5" x="29" y="14"></rect><path d="M34 32 Q34 22 39 20 Q44 18 47 22 Q50 26 50 32 L50 50 L55 50 L55 32 Q55 18 46 14 Q37 10 34 24Z" fill="url(#lg6)"></path><rect fill="url(#lg6)" height="2" rx="1" width="9" x="50" y="48"></rect></svg>
+</div>
+<div class="header-script">latter house life</div>
+<div class="header-subtitle">Latter House Life</div>
+</div>
+<div class="page-content" id="history-content"><div class="history-empty">
+<div class="history-empty-leaf">🌿</div>
+<p class="history-empty-text">
+        "Your story is still being written..."<br/><br/>
+        Begin by saving an entry on your Daily Planner. Each day you record becomes a stone in the altar of your faith journey.
+      </p>
+</div></div>
+</section>
+<!-- ===== BOTTOM NAVIGATION ===== -->
+<nav aria-label="Main navigation" class="bottom-nav" role="navigation">
+<div class="nav-inner">
+<button aria-label="Today" class="nav-tab active" data-page="today">
+<svg class="nav-tab-icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+<polyline points="9,22 9,12 15,12 15,22"></polyline>
+</svg>
+<span class="nav-tab-label">Today</span>
+</button>
+<button aria-label="Week" class="nav-tab" data-page="week">
+<svg class="nav-tab-icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<rect height="18" rx="2" ry="2" width="18" x="3" y="4"></rect>
+<line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line>
+<line x1="3" x2="21" y1="10" y2="10"></line>
+<line stroke-width="3" x1="8" x2="8" y1="14" y2="14"></line><line stroke-width="3" x1="12" x2="12" y1="14" y2="14"></line><line stroke-width="3" x1="16" x2="16" y1="14" y2="14"></line>
+</svg>
+<span class="nav-tab-label">Week</span>
+</button>
+<button aria-label="Month" class="nav-tab" data-page="month">
+<svg class="nav-tab-icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<rect height="18" rx="2" ry="2" width="18" x="3" y="4"></rect>
+<line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line>
+<line x1="3" x2="21" y1="10" y2="10"></line>
+</svg>
+<span class="nav-tab-label">Month</span>
+</button>
+<button aria-label="Year" class="nav-tab" data-page="year">
+<svg class="nav-tab-icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"></polygon>
+</svg>
+<span class="nav-tab-label">Year</span>
+</button>
+<button aria-label="Track" class="nav-tab" data-page="track">
+<svg class="nav-tab-icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<line x1="18" x2="18" y1="20" y2="10"></line><line x1="12" x2="12" y1="20" y2="4"></line><line x1="6" x2="6" y1="20" y2="14"></line>
+</svg>
+<span class="nav-tab-label">Track</span>
+</button>
+<button aria-label="History" class="nav-tab" data-page="history">
+<svg class="nav-tab-icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+<path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+</svg>
+<span class="nav-tab-label">History</span>
+</button>
+</div>
+</nav>
+</div><!-- /#app -->
+<div class="floating-feedback" id="floating-feedback">Saved</div><script src='{{ url_for("static", filename="js/app.js") }}'></script></body></html>
