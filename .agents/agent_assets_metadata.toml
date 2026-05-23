@@ -1,0 +1,14 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "gFC_5MQvJXZP8bgbyYoAl"
+uri = "file://screenshots/login-screen.jpg"
+type = "image"
+title = "Login Screen — current state"
+
+[[outputs]]
+id = "92aH_W3ufWiSmDwjMzRKB"
+uri = "file://latter-house-project.tar.gz"
+type = "unspecified"
+title = "Latter House Project — Full Source Code"

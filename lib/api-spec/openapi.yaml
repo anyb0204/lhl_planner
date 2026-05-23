@@ -1,0 +1,2186 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Latter House Life Planner API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: planner
+    description: Planner entries and tasks
+  - name: ai
+    description: AI-powered planner features
+  - name: trackers
+    description: Life tracker modules
+  - name: Auth
+    description: Browser and mobile authentication endpoints.
+paths:
+  /special-dates:
+    get:
+      operationId: listSpecialDates
+      tags: [planner]
+      summary: List special dates for a month
+      parameters:
+        - name: month
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of special dates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SpecialDate"
+    post:
+      operationId: createSpecialDate
+      tags: [planner]
+      summary: Create a special date
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSpecialDateBody"
+      responses:
+        "201":
+          description: Created special date
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecialDate"
+
+  /special-dates/{id}:
+    delete:
+      operationId: deleteSpecialDate
+      tags: [planner]
+      summary: Delete a special date
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /reminders:
+    get:
+      operationId: listReminders
+      tags: [trackers]
+      summary: Get upcoming reminders for the authenticated user
+      description: Returns medication refills (≤7 days), appointments (≤3 days), and bill-category expenses (≤7 days)
+      responses:
+        "200":
+          description: List of active reminders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reminder"
+
+  /todos:
+    get:
+      operationId: listTodos
+      tags: [trackers]
+      summary: List todo items for the authenticated user
+      parameters:
+        - name: completed
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of todo items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TodoItem"
+    post:
+      operationId: createTodo
+      tags: [trackers]
+      summary: Create a todo item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTodoBody"
+      responses:
+        "201":
+          description: Created todo item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TodoItem"
+
+  /todos/{id}:
+    put:
+      operationId: updateTodo
+      tags: [trackers]
+      summary: Update a todo item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTodoBody"
+      responses:
+        "200":
+          description: Updated todo item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TodoItem"
+    delete:
+      operationId: deleteTodo
+      tags: [trackers]
+      summary: Delete a todo item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /prayers:
+    get:
+      operationId: listPrayers
+      tags: [trackers]
+      summary: List prayer entries
+      parameters:
+        - name: month
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of prayer entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PrayerEntry"
+    post:
+      operationId: createPrayer
+      tags: [trackers]
+      summary: Create a prayer entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePrayerBody"
+      responses:
+        "201":
+          description: Created prayer entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrayerEntry"
+
+  /prayers/{id}:
+    put:
+      operationId: updatePrayer
+      tags: [trackers]
+      summary: Update a prayer entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePrayerBody"
+      responses:
+        "200":
+          description: Updated prayer entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrayerEntry"
+    delete:
+      operationId: deletePrayer
+      tags: [trackers]
+      summary: Delete a prayer entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /habits:
+    get:
+      operationId: listHabits
+      tags: [trackers]
+      summary: List habits
+      responses:
+        "200":
+          description: List of habits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Habit"
+    post:
+      operationId: createHabit
+      tags: [trackers]
+      summary: Create a habit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateHabitBody"
+      responses:
+        "201":
+          description: Created habit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Habit"
+
+  /habits/{id}:
+    put:
+      operationId: updateHabit
+      tags: [trackers]
+      summary: Update a habit
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateHabitBody"
+      responses:
+        "200":
+          description: Updated habit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Habit"
+    delete:
+      operationId: deleteHabit
+      tags: [trackers]
+      summary: Delete a habit
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /habits/logs:
+    get:
+      operationId: listHabitLogs
+      tags: [trackers]
+      summary: List habit logs for a month
+      parameters:
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of habit logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HabitLog"
+
+  /habits/{id}/logs:
+    post:
+      operationId: logHabit
+      tags: [trackers]
+      summary: Log a habit completion for a date
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogHabitBody"
+      responses:
+        "201":
+          description: Created habit log
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HabitLog"
+
+  /habits/{id}/logs/{date}:
+    delete:
+      operationId: deleteHabitLog
+      tags: [trackers]
+      summary: Remove a habit log for a date
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /planner/entries:
+    get:
+      operationId: listPlannerEntries
+      tags: [planner]
+      summary: List planner entries for a date range
+      parameters:
+        - name: date
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: view
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [day, week, month, year]
+      responses:
+        "200":
+          description: List of planner entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PlannerEntry"
+    post:
+      operationId: createPlannerEntry
+      tags: [planner]
+      summary: Create a planner entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlannerEntryBody"
+      responses:
+        "201":
+          description: Created entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlannerEntry"
+
+  /planner/entries/{id}:
+    get:
+      operationId: getPlannerEntry
+      tags: [planner]
+      summary: Get a planner entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Planner entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlannerEntry"
+        "404":
+          description: Not found
+    put:
+      operationId: updatePlannerEntry
+      tags: [planner]
+      summary: Update a planner entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePlannerEntryBody"
+      responses:
+        "200":
+          description: Updated entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlannerEntry"
+    delete:
+      operationId: deletePlannerEntry
+      tags: [planner]
+      summary: Delete a planner entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /planner/tasks:
+    get:
+      operationId: listTasks
+      tags: [planner]
+      summary: List tasks
+      parameters:
+        - name: date
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: completed
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+    post:
+      operationId: createTask
+      tags: [planner]
+      summary: Create a task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskBody"
+      responses:
+        "201":
+          description: Created task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+  /planner/tasks/{id}:
+    put:
+      operationId: updateTask
+      tags: [planner]
+      summary: Update a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskBody"
+      responses:
+        "200":
+          description: Updated task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+    delete:
+      operationId: deleteTask
+      tags: [planner]
+      summary: Delete a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /planner/brain-dumps:
+    get:
+      operationId: listBrainDumps
+      tags: [planner]
+      summary: List brain dumps
+      responses:
+        "200":
+          description: List of brain dumps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BrainDump"
+    post:
+      operationId: createBrainDump
+      tags: [planner]
+      summary: Save a brain dump
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBrainDumpBody"
+      responses:
+        "201":
+          description: Saved brain dump
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BrainDump"
+
+  /ai/brain-dump-help:
+    post:
+      operationId: brainDumpHelp
+      tags: [ai]
+      summary: Analyze brain dump and organize into tasks with follow-up prompts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BrainDumpHelpBody"
+      responses:
+        "200":
+          description: Organized tasks and follow-up questions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BrainDumpHelpResult"
+
+  /ai/scripture:
+    post:
+      operationId: generateScripture
+      tags: [ai]
+      summary: Generate a fresh scripture with reflection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScriptureRequestBody"
+      responses:
+        "200":
+          description: Scripture and reflection
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScriptureResult"
+
+  /ai/encouragement:
+    post:
+      operationId: generateEncouragement
+      tags: [ai]
+      summary: Generate personalized encouragement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EncouragementBody"
+      responses:
+        "200":
+          description: Encouragement message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EncouragementResult"
+
+  /ai/truth-generator:
+    post:
+      operationId: generateTruth
+      tags: [ai]
+      summary: Given a lie or negative thought, return scripture truth that counters it
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TruthGeneratorBody"
+      responses:
+        "200":
+          description: Scripture truth and affirmation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TruthGeneratorResult"
+
+  /ai/planner-help:
+    post:
+      operationId: plannerHelp
+      tags: [ai]
+      summary: Get AI help for planning based on current context
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlannerHelpBody"
+      responses:
+        "200":
+          description: Planning suggestions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlannerHelpResult"
+
+  /ai/get-back-on-track:
+    post:
+      operationId: getBackOnTrack
+      tags: [ai]
+      summary: Reginald assigns 1-2 small habits to help user restart their routine
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GetBackOnTrackBody"
+      responses:
+        "200":
+          description: Reginald's welcome-back message with micro-habit suggestions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetBackOnTrackResult"
+
+  /ai/task-breakdown:
+    post:
+      operationId: taskBreakdown
+      tags: [ai]
+      summary: Reginald breaks a task into steps with time estimates and scripture
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskBreakdownBody"
+      responses:
+        "200":
+          description: Step-by-step breakdown with time estimates, scripture, and encouragement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskBreakdownResult"
+
+  /trackers/medications:
+    get:
+      operationId: listMedications
+      tags: [trackers]
+      summary: List all medications
+      responses:
+        "200":
+          description: List of medications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Medication"
+    post:
+      operationId: createMedication
+      tags: [trackers]
+      summary: Add a medication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMedicationBody"
+      responses:
+        "201":
+          description: Created medication
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Medication"
+
+  /trackers/medications/{id}:
+    put:
+      operationId: updateMedication
+      tags: [trackers]
+      summary: Update a medication
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMedicationBody"
+      responses:
+        "200":
+          description: Updated medication
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Medication"
+    delete:
+      operationId: deleteMedication
+      tags: [trackers]
+      summary: Delete a medication
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /trackers/health:
+    get:
+      operationId: listHealthAppointments
+      tags: [trackers]
+      summary: List health appointments
+      responses:
+        "200":
+          description: List of appointments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HealthAppointment"
+    post:
+      operationId: createHealthAppointment
+      tags: [trackers]
+      summary: Add a health appointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateHealthAppointmentBody"
+      responses:
+        "201":
+          description: Created appointment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthAppointment"
+
+  /trackers/health/{id}:
+    put:
+      operationId: updateHealthAppointment
+      tags: [trackers]
+      summary: Update a health appointment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateHealthAppointmentBody"
+      responses:
+        "200":
+          description: Updated appointment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthAppointment"
+    delete:
+      operationId: deleteHealthAppointment
+      tags: [trackers]
+      summary: Delete a health appointment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /trackers/financial:
+    get:
+      operationId: listFinancialEntries
+      tags: [trackers]
+      summary: List financial entries
+      parameters:
+        - name: month
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by month (YYYY-MM)
+      responses:
+        "200":
+          description: List of financial entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FinancialEntry"
+    post:
+      operationId: createFinancialEntry
+      tags: [trackers]
+      summary: Add a financial entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFinancialEntryBody"
+      responses:
+        "201":
+          description: Created entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialEntry"
+
+  /trackers/financial/{id}:
+    delete:
+      operationId: deleteFinancialEntry
+      tags: [trackers]
+      summary: Delete a financial entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /trackers/goals:
+    get:
+      operationId: listGoals
+      tags: [trackers]
+      summary: List goals
+      responses:
+        "200":
+          description: List of goals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Goal"
+    post:
+      operationId: createGoal
+      tags: [trackers]
+      summary: Create a goal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGoalBody"
+      responses:
+        "201":
+          description: Created goal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Goal"
+
+  /trackers/goals/{id}:
+    put:
+      operationId: updateGoal
+      tags: [trackers]
+      summary: Update a goal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateGoalBody"
+      responses:
+        "200":
+          description: Updated goal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Goal"
+    delete:
+      operationId: deleteGoal
+      tags: [trackers]
+      summary: Delete a goal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /auth/user:
+    get:
+      tags: [Auth]
+      operationId: getCurrentAuthUser
+      summary: Get the currently authenticated user
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '200':
+          description: Auth status resolved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthUserEnvelope'
+  /login:
+    get:
+      tags: [Auth]
+      operationId: beginBrowserLogin
+      summary: Start the browser OIDC login flow
+      parameters:
+        - name: returnTo
+          in: query
+          required: false
+          description: Relative path to redirect to after login (must start with `/`). Defaults to `/`.
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect to the OIDC authorization endpoint.
+  /callback:
+    get:
+      tags: [Auth]
+      operationId: handleBrowserLoginCallback
+      summary: Complete the browser OIDC login flow
+      parameters:
+        - name: code
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: iss
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uri
+      responses:
+        '302':
+          description: Redirect to the `returnTo` path on success (defaults to `/`) or `/api/login` on failure.
+  /logout:
+    get:
+      tags: [Auth]
+      operationId: logoutBrowserSession
+      summary: Clear the session and begin OIDC logout
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '302':
+          description: Redirect to the OIDC provider logout URL.
+  /mobile-auth/token-exchange:
+    post:
+      tags: [Auth]
+      operationId: exchangeMobileAuthorizationCode
+      summary: Exchange a mobile OIDC code for a session token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MobileTokenExchangeRequest'
+      responses:
+        '200':
+          description: Session created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileTokenExchangeSuccess'
+        '400':
+          description: Missing or invalid required fields.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Token did not contain usable claims.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Token exchange failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /mobile-auth/logout:
+    post:
+      tags: [Auth]
+      operationId: logoutMobileSession
+      summary: Delete a mobile session token
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+      responses:
+        '200':
+          description: Logout processed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutSuccess'
+
+components:
+  parameters:
+    AuthorizationSessionHeader:
+      name: Authorization
+      in: header
+      required: false
+      description: Opaque session token — `Bearer <sid>`.
+      schema:
+        type: string
+    SessionCookie:
+      name: sid
+      in: cookie
+      required: false
+      description: Browser session cookie.
+      schema:
+        type: string
+  schemas:
+    TodoItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+        notes:
+          type: string
+          nullable: true
+        dueDate:
+          type: string
+          nullable: true
+        completed:
+          type: boolean
+        completedAt:
+          type: string
+          nullable: true
+        priority:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, text, completed, createdAt, updatedAt]
+
+    CreateTodoBody:
+      type: object
+      properties:
+        text:
+          type: string
+        notes:
+          type: string
+          nullable: true
+        dueDate:
+          type: string
+          nullable: true
+        priority:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+      required: [text]
+
+    UpdateTodoBody:
+      type: object
+      properties:
+        text:
+          type: string
+        notes:
+          type: string
+          nullable: true
+        dueDate:
+          type: string
+          nullable: true
+        completed:
+          type: boolean
+        completedAt:
+          type: string
+          nullable: true
+        priority:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+
+    PrayerEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        title:
+          type: string
+          nullable: true
+        body:
+          type: string
+        category:
+          type: string
+          nullable: true
+        answered:
+          type: boolean
+        answeredDate:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, date, body, answered, createdAt, updatedAt]
+
+    CreatePrayerBody:
+      type: object
+      properties:
+        date:
+          type: string
+        title:
+          type: string
+          nullable: true
+        body:
+          type: string
+        category:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+      required: [date, body]
+
+    UpdatePrayerBody:
+      type: object
+      properties:
+        title:
+          type: string
+          nullable: true
+        body:
+          type: string
+        category:
+          type: string
+          nullable: true
+        answered:
+          type: boolean
+        answeredDate:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+
+    Habit:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        emoji:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        frequency:
+          type: string
+        active:
+          type: boolean
+        createdAt:
+          type: string
+      required: [id, name, frequency, active, createdAt]
+
+    CreateHabitBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        emoji:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        frequency:
+          type: string
+          nullable: true
+      required: [name]
+
+    UpdateHabitBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        emoji:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        frequency:
+          type: string
+        active:
+          type: boolean
+
+    HabitLog:
+      type: object
+      properties:
+        id:
+          type: integer
+        habitId:
+          type: integer
+        date:
+          type: string
+        completed:
+          type: boolean
+        note:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required: [id, habitId, date, completed, createdAt]
+
+    LogHabitBody:
+      type: object
+      properties:
+        date:
+          type: string
+        note:
+          type: string
+          nullable: true
+      required: [date]
+
+    Reminder:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [appointment, refill, bill]
+        urgency:
+          type: string
+          enum: [high, medium, low]
+        title:
+          type: string
+        subtitle:
+          type: string
+        href:
+          type: string
+      required:
+        - id
+        - type
+        - urgency
+        - title
+        - subtitle
+        - href
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    PlannerEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        timeSlot:
+          type: string
+          nullable: true
+        content:
+          type: string
+        category:
+          type: string
+          nullable: true
+        section:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - date
+        - content
+        - section
+        - createdAt
+        - updatedAt
+
+    CreatePlannerEntryBody:
+      type: object
+      properties:
+        date:
+          type: string
+        timeSlot:
+          type: string
+          nullable: true
+        content:
+          type: string
+        category:
+          type: string
+          nullable: true
+        section:
+          type: string
+      required:
+        - date
+        - content
+        - section
+
+    UpdatePlannerEntryBody:
+      type: object
+      properties:
+        content:
+          type: string
+        timeSlot:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        section:
+          type: string
+
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        text:
+          type: string
+        completed:
+          type: boolean
+        priority:
+          type: string
+          nullable: true
+        source:
+          type: string
+          nullable: true
+        recurring:
+          type: boolean
+          nullable: true
+        recurringFrequency:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required:
+        - id
+        - date
+        - text
+        - completed
+        - createdAt
+
+    CreateTaskBody:
+      type: object
+      properties:
+        date:
+          type: string
+        text:
+          type: string
+        priority:
+          type: string
+          nullable: true
+        source:
+          type: string
+          nullable: true
+        recurring:
+          type: boolean
+          nullable: true
+        recurringFrequency:
+          type: string
+          nullable: true
+      required:
+        - date
+        - text
+
+    UpdateTaskBody:
+      type: object
+      properties:
+        text:
+          type: string
+        completed:
+          type: boolean
+        priority:
+          type: string
+          nullable: true
+        recurring:
+          type: boolean
+          nullable: true
+        recurringFrequency:
+          type: string
+          nullable: true
+
+    BrainDump:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        rawText:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - date
+        - rawText
+        - createdAt
+
+    CreateBrainDumpBody:
+      type: object
+      properties:
+        date:
+          type: string
+        rawText:
+          type: string
+      required:
+        - date
+        - rawText
+
+    BrainDumpHelpBody:
+      type: object
+      properties:
+        text:
+          type: string
+        date:
+          type: string
+      required:
+        - text
+        - date
+
+    BrainDumpHelpResult:
+      type: object
+      properties:
+        tasks:
+          type: array
+          items:
+            type: object
+            properties:
+              text:
+                type: string
+              priority:
+                type: string
+            required:
+              - text
+        followUpQuestions:
+          type: array
+          items:
+            type: string
+        encouragement:
+          type: string
+      required:
+        - tasks
+        - followUpQuestions
+        - encouragement
+
+    ScriptureRequestBody:
+      type: object
+      properties:
+        context:
+          type: string
+          nullable: true
+      required: []
+
+    ScriptureResult:
+      type: object
+      properties:
+        reference:
+          type: string
+        text:
+          type: string
+        reflection:
+          type: string
+      required:
+        - reference
+        - text
+        - reflection
+
+    EncouragementBody:
+      type: object
+      properties:
+        context:
+          type: string
+          nullable: true
+        view:
+          type: string
+          nullable: true
+      required: []
+
+    EncouragementResult:
+      type: object
+      properties:
+        message:
+          type: string
+        scriptureReference:
+          type: string
+          nullable: true
+      required:
+        - message
+
+    TruthGeneratorBody:
+      type: object
+      properties:
+        lie:
+          type: string
+      required:
+        - lie
+
+    TruthGeneratorResult:
+      type: object
+      properties:
+        lie:
+          type: string
+        scriptureReference:
+          type: string
+        scriptureText:
+          type: string
+        affirmation:
+          type: string
+        reflection:
+          type: string
+      required:
+        - lie
+        - scriptureReference
+        - scriptureText
+        - affirmation
+        - reflection
+
+    PlannerHelpBody:
+      type: object
+      properties:
+        context:
+          type: string
+        view:
+          type: string
+          enum: [day, week, month, year]
+        currentEntries:
+          type: string
+          nullable: true
+      required:
+        - context
+        - view
+
+    PlannerHelpResult:
+      type: object
+      properties:
+        suggestions:
+          type: array
+          items:
+            type: string
+        insights:
+          type: string
+        prayerFocus:
+          type: string
+          nullable: true
+      required:
+        - suggestions
+        - insights
+
+    GetBackOnTrackBody:
+      type: object
+      properties:
+        daysAway:
+          type: integer
+          nullable: true
+
+    BackOnTrackHabit:
+      type: object
+      properties:
+        name:
+          type: string
+        why:
+          type: string
+      required:
+        - name
+        - why
+
+    BackOnTrackScripture:
+      type: object
+      properties:
+        reference:
+          type: string
+        text:
+          type: string
+      required:
+        - reference
+        - text
+
+    GetBackOnTrackResult:
+      type: object
+      properties:
+        greeting:
+          type: string
+        habits:
+          type: array
+          items:
+            $ref: "#/components/schemas/BackOnTrackHabit"
+        scripture:
+          $ref: "#/components/schemas/BackOnTrackScripture"
+        encouragement:
+          type: string
+      required:
+        - greeting
+        - habits
+        - scripture
+        - encouragement
+
+    TaskBreakdownBody:
+      type: object
+      required:
+        - task
+      properties:
+        task:
+          type: string
+
+    TaskBreakdownStep:
+      type: object
+      required:
+        - text
+        - estimatedMinutes
+      properties:
+        text:
+          type: string
+        estimatedMinutes:
+          type: integer
+
+    TaskBreakdownResult:
+      type: object
+      required:
+        - steps
+        - scripture
+        - encouragement
+      properties:
+        steps:
+          type: array
+          items:
+            $ref: "#/components/schemas/TaskBreakdownStep"
+        scripture:
+          type: object
+          required:
+            - reference
+            - text
+          properties:
+            reference:
+              type: string
+            text:
+              type: string
+        encouragement:
+          type: string
+
+    Medication:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        dose:
+          type: string
+          nullable: true
+        times:
+          type: string
+          nullable: true
+        asNeeded:
+          type: boolean
+        notes:
+          type: string
+          nullable: true
+        refillDate:
+          type: string
+          nullable: true
+        doctor:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - asNeeded
+        - createdAt
+
+    CreateMedicationBody:
+      type: object
+      properties:
+        name:
+          type: string
+        dose:
+          type: string
+          nullable: true
+        times:
+          type: string
+          nullable: true
+        asNeeded:
+          type: boolean
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        refillDate:
+          type: string
+          nullable: true
+        doctor:
+          type: string
+          nullable: true
+      required:
+        - name
+
+    UpdateMedicationBody:
+      type: object
+      properties:
+        name:
+          type: string
+        dose:
+          type: string
+          nullable: true
+        times:
+          type: string
+          nullable: true
+        asNeeded:
+          type: boolean
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        refillDate:
+          type: string
+          nullable: true
+        doctor:
+          type: string
+          nullable: true
+
+    HealthAppointment:
+      type: object
+      properties:
+        id:
+          type: integer
+        person:
+          type: string
+        doctor:
+          type: string
+        specialty:
+          type: string
+          nullable: true
+        appointmentDate:
+          type: string
+        location:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        questions:
+          type: string
+          nullable: true
+        completed:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        - id
+        - person
+        - doctor
+        - appointmentDate
+        - completed
+        - createdAt
+
+    CreateHealthAppointmentBody:
+      type: object
+      properties:
+        person:
+          type: string
+        doctor:
+          type: string
+        specialty:
+          type: string
+          nullable: true
+        appointmentDate:
+          type: string
+        location:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        questions:
+          type: string
+          nullable: true
+      required:
+        - person
+        - doctor
+        - appointmentDate
+
+    UpdateHealthAppointmentBody:
+      type: object
+      properties:
+        person:
+          type: string
+        doctor:
+          type: string
+        specialty:
+          type: string
+          nullable: true
+        appointmentDate:
+          type: string
+        location:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        questions:
+          type: string
+          nullable: true
+        completed:
+          type: boolean
+
+    FinancialEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        type:
+          type: string
+        amount:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required:
+        - id
+        - date
+        - type
+        - amount
+        - description
+        - createdAt
+
+    CreateFinancialEntryBody:
+      type: object
+      properties:
+        date:
+          type: string
+        type:
+          type: string
+        amount:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          nullable: true
+      required:
+        - date
+        - type
+        - amount
+        - description
+
+    Goal:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        targetDate:
+          type: string
+          nullable: true
+        progress:
+          type: string
+        completed:
+          type: boolean
+        milestones:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - title
+        - progress
+        - completed
+        - createdAt
+        - updatedAt
+
+    CreateGoalBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        targetDate:
+          type: string
+          nullable: true
+        milestones:
+          type: string
+          nullable: true
+      required:
+        - title
+
+    UpdateGoalBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        targetDate:
+          type: string
+          nullable: true
+        progress:
+          type: string
+          nullable: true
+        completed:
+          type: boolean
+          nullable: true
+        milestones:
+          type: string
+          nullable: true
+
+    SpecialDate:
+      type: object
+      required: [id, date, label, type, recurring, createdAt]
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        label:
+          type: string
+        type:
+          type: string
+          enum: [birthday, anniversary, event, reminder, bill]
+        recurring:
+          type: boolean
+        createdAt:
+          type: string
+
+    CreateSpecialDateBody:
+      type: object
+      required: [date, label, type]
+      properties:
+        date:
+          type: string
+        label:
+          type: string
+        type:
+          type: string
+          enum: [birthday, anniversary, event, reminder, bill]
+        recurring:
+          type: boolean
+
+    AuthUser:
+      type: object
+      required: [id, email, firstName, lastName, profileImageUrl]
+      properties:
+        id:
+          type: string
+        email:
+          type: [string, 'null']
+          format: email
+        firstName:
+          type: [string, 'null']
+        lastName:
+          type: [string, 'null']
+        profileImageUrl:
+          type: [string, 'null']
+    AuthUserEnvelope:
+      type: object
+      required: [user]
+      properties:
+        user:
+          oneOf:
+            - $ref: '#/components/schemas/AuthUser'
+            - type: 'null'
+    MobileTokenExchangeRequest:
+      type: object
+      required: [code, code_verifier, redirect_uri, state]
+      properties:
+        code:
+          type: string
+          minLength: 1
+        code_verifier:
+          type: string
+          minLength: 1
+        redirect_uri:
+          type: string
+          minLength: 1
+          format: uri
+        state:
+          type: string
+          minLength: 1
+        nonce:
+          type: string
+          minLength: 1
+    MobileTokenExchangeSuccess:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+    LogoutSuccess:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+          const: true
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string

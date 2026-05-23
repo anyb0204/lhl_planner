@@ -1,0 +1,69 @@
+modules = ["nodejs-24", "postgresql-16"]
+
+[deployment]
+router = "application"
+deploymentTarget = "autoscale"
+
+[deployment.postBuild]
+args = ["pnpm", "store", "prune"]
+env = { "CI" = "true" }
+
+[workflows]
+runButton = "Project"
+
+[agent]
+stack = "PNPM_WORKSPACE"
+expertMode = true
+integrations = ["stripe:1.0.0", "google-calendar:1.0.0", "outlook:1.0.0"]
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 20000
+
+[[ports]]
+localPort = 8080
+externalPort = 80
+
+[[ports]]
+localPort = 8081
+externalPort = 8081
+
+[[ports]]
+localPort = 8082
+externalPort = 3001
+
+[[ports]]
+localPort = 8083
+externalPort = 3002
+
+[[ports]]
+localPort = 8084
+externalPort = 4200
+
+[[ports]]
+localPort = 8085
+externalPort = 3003
+
+[[ports]]
+localPort = 8086
+externalPort = 5000
+
+[[ports]]
+localPort = 21838
+externalPort = 3000
+
+[nix]
+channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+OWNER_EMAILS = "godwinamy@gmail.com,beccadfuller@gmail.com,fuller_barb@yahoo.com,CraigFuller59@gmail.com,hayesde96@gmail.com,heather.hayes925@gmail.com,gentrie.nolen@gmail.com,alex.nikolette.taylor@gmail.com,Ratliffhomemanagement@gmail.com"
+
+[userenv.development]
+VITE_CLERK_PUBLISHABLE_KEY = "pk_test_Z3JhdGVmdWwtaWd1YW5hLTY3LmNsZXJrLmFjY291bnRzLmRldiQ"
+OWNER_USER_IDS = "user_3DHHwVEmOfkexVvbRElKK5L5End,user_3DeMRZfC7jnHsw2PhSpyPUEXXgx"
+
+[userenv.production]
+VITE_CLERK_PUBLISHABLE_KEY = "pk_test_Z3JhdGVmdWwtaWd1YW5hLTY3LmNsZXJrLmFjY291bnRzLmRldiQ"
+OWNER_USER_IDS = "user_3DHHwVEmOfkexVvbRElKK5L5End,user_3DeMRZfC7jnHsw2PhSpyPUEXXgx"
