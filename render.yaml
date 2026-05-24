@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: lhl-planner
+    env: node
+    buildCommand: pnpm install && pnpm run build
+    startCommand: pnpm run start
+    envVars:
+      - key: DATABASE_URL
+        fromSecret: DATABASE_URL
