@@ -3,6 +3,8 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import { clerkMiddleware } from "@clerk/express";
 import { publishableKeyFromHost } from "@clerk/shared/keys";
+import path from "path";
+import { fileURLToPath } from "url";
 import {
   CLERK_PROXY_PATH,
   clerkProxyMiddleware,
@@ -75,5 +77,22 @@ app.use(
 );
 
 app.use("/api", router);
+
+// In production, serve the built SPA. The frontend is built to
+// artifacts/latter-house/dist at the repo root.
+if (process.env.NODE_ENV === "production") {
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  const distPath = path.resolve(__dirname, "../../../../artifacts/latter-house/dist");
+  const { existsSync } = await import("fs");
+  if (existsSync(distPath)) {
+    app.use(express.static(distPath));
+    // SPA fallback — serve index.html for any non-API route
+    app.get("*", (req, res) => {
+      if (!req.path.startsWith("/api/")) {
+        res.sendFile(path.join(distPath, "index.html"));
+      }
+    });
+  }
+}
 
 export default app;

@@ -7,6 +7,8 @@ import wellnessRouter from "./wellness";
 import authRouter from "./auth";
 import stripeRouter from "./stripe";
 import adminRouter from "./admin";
+import lifestyleRouter from "./lifestyle";
+import businessRouter from "./business";
 
 const router: IRouter = Router();
 
@@ -38,5 +40,10 @@ router.use(pathGate("/reminders", trackersRouter));
 router.use(pathGate("/todos", wellnessRouter));
 router.use(pathGate("/prayers", wellnessRouter));
 router.use(pathGate("/habits", wellnessRouter));
+router.use(pathGate("/cycle", lifestyleRouter));
+router.use(pathGate("/mood", lifestyleRouter));
+router.use(pathGate("/notes", lifestyleRouter));
+router.use(pathGate("/vision-board", lifestyleRouter));
+router.use(pathGate("/business", businessRouter));
 
 export default router;

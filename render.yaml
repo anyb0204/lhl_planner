@@ -2,8 +2,28 @@ services:
   - type: web
     name: lhl-planner
     env: node
-    buildCommand: pnpm install && pnpm --filter lhl-planner build
-    startCommand: pnpm --filter lhl-planner start
+    plan: free
+    region: oregon
+    buildCommand: >
+      pnpm install --frozen-lockfile &&
+      pnpm --filter @workspace/latter-house run build &&
+      pnpm --filter @workspace/api-server run build
+    startCommand: pnpm --filter @workspace/api-server run start
+    healthCheckPath: /api/healthz
     envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
       - key: DATABASE_URL
-        fromSecret: DATABASE_URL  
+        sync: false
+      - key: CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: VITE_CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: VITE_CLERK_PROXY_URL
+        sync: false
+      - key: BASE_PATH
+        value: ""
