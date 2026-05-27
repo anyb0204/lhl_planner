@@ -40,6 +40,7 @@ import OnboardingPage from "@/pages/onboarding";
 import SideHustlePage from "@/pages/side-hustle/index";
 import AIAssistantPage from "@/pages/ai-assistant";
 import VisionBoardPage from "@/pages/vision-board";
+import MenstrualTrackerPage from "@/pages/menstrual-tracker";
 import { RemindersProvider } from "@/contexts/RemindersContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 
@@ -295,6 +296,7 @@ function Router() {
         <Route path="/side-hustle" component={SideHustlePage} />
         <Route path="/ai-assistant" component={AIAssistantPage} />
         <Route path="/vision-board" component={VisionBoardPage} />
+        <Route path="/cycle-tracker" component={MenstrualTrackerPage} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>
