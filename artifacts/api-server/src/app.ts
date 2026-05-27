@@ -82,7 +82,7 @@ app.use("/api", router);
 // artifacts/latter-house/dist at the repo root.
 if (process.env.NODE_ENV === "production") {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  const distPath = path.resolve(__dirname, "../../../../artifacts/latter-house/dist");
+  const distPath = path.resolve(__dirname, "../../latter-house/dist");
   const { existsSync } = await import("fs");
   if (existsSync(distPath)) {
     app.use(express.static(distPath));
