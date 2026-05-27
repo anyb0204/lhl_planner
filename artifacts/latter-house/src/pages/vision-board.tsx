@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import {
   ImagePlus, Trash2, Edit3, X, Move, Eye, EyeOff,
   Heart, Star, Sparkles, LayoutGrid, Rows, Plus, Download,
@@ -6,23 +6,29 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import {
+  useListVisionBoardItems,
+  useCreateVisionBoardItem,
+  useUpdateVisionBoardItem,
+  useDeleteVisionBoardItem,
+  type VisionBoardItem,
+} from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface VisionItem {
-  id: string;
+  id: number;
   type: "image" | "quote" | "affirmation";
-  content: string; // URL for images, text for quotes/affirmations
-  caption?: string;
+  content: string;
+  caption?: string | null;
   category: string;
-  color?: string;
+  color?: string | null;
   pinned: boolean;
   createdAt: string;
 }
 
 type Layout = "masonry" | "grid";
-
-const STORAGE_KEY = "lhl-vision-board";
 
 const CATEGORIES = [
   "All",
@@ -53,17 +59,6 @@ const INSPIRATIONAL_QUOTES = [
   { text: "The best time to plant a tree was 20 years ago. The second best time is now.", ref: "" },
   { text: "Your best chapter isn't behind you — it's still being written.", ref: "" },
 ];
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function loadItems(): VisionItem[] {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
-  } catch { return []; }
-}
-function saveItems(items: VisionItem[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-}
 
 // ─── Add Item Modal ───────────────────────────────────────────────────────────
 
@@ -286,8 +281,8 @@ function AddItemModal({ onSave, onClose }: AddItemModalProps) {
 
 function VisionCard({ item, onDelete, onTogglePin }: {
   item: VisionItem;
-  onDelete: (id: string) => void;
-  onTogglePin: (id: string) => void;
+  onDelete: (id: number) => void;
+  onTogglePin: (id: number) => void;
 }) {
   const [hover, setHover] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -388,32 +383,68 @@ function VisionCard({ item, onDelete, onTogglePin }: {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
+function toVisionItem(raw: VisionBoardItem): VisionItem {
+  return {
+    id: raw.id!,
+    type: (raw.type as VisionItem["type"]) ?? "image",
+    content: raw.content ?? "",
+    caption: raw.caption,
+    category: raw.category ?? "Faith",
+    color: raw.color,
+    pinned: raw.pinned ?? false,
+    createdAt: raw.createdAt ?? new Date().toISOString(),
+  };
+}
+
 export default function VisionBoardPage() {
-  const [items, setItems] = useState<VisionItem[]>(loadItems);
+  const queryClient = useQueryClient();
+  const { data: rawItems = [] } = useListVisionBoardItems();
+  const createItem = useCreateVisionBoardItem();
+  const updateItem = useUpdateVisionBoardItem();
+  const deleteItemMutation = useDeleteVisionBoardItem();
+
+  const items: VisionItem[] = (rawItems as VisionBoardItem[]).map(toVisionItem);
+
   const [showAdd, setShowAdd] = useState(false);
   const [layout, setLayout] = useState<Layout>("masonry");
   const [activeCategory, setActiveCategory] = useState("All");
   const [pinnedOnly, setPinnedOnly] = useState(false);
 
-  useEffect(() => { saveItems(items); }, [items]);
-
   function addItem(data: Omit<VisionItem, "id" | "createdAt" | "pinned">) {
-    const item: VisionItem = {
-      ...data,
-      id: crypto.randomUUID(),
-      pinned: false,
-      createdAt: new Date().toISOString(),
-    };
-    setItems(prev => [item, ...prev]);
-    setShowAdd(false);
+    createItem.mutate(
+      {
+        data: {
+          type: data.type,
+          content: data.content,
+          caption: data.caption ?? null,
+          category: data.category,
+          color: data.color ?? null,
+          pinned: false,
+        },
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["/api/vision-board"] });
+          setShowAdd(false);
+        },
+      }
+    );
   }
 
-  function deleteItem(id: string) {
-    setItems(prev => prev.filter(i => i.id !== id));
+  function deleteItem(id: number) {
+    deleteItemMutation.mutate(
+      { id },
+      { onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/vision-board"] }) }
+    );
   }
 
-  function togglePin(id: string) {
-    setItems(prev => prev.map(i => i.id === id ? { ...i, pinned: !i.pinned } : i));
+  function togglePin(id: number) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    updateItem.mutate(
+      { id, data: { pinned: !item.pinned } },
+      { onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/vision-board"] }) }
+    );
   }
 
   const filtered = items

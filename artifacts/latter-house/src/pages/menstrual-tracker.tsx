@@ -12,6 +12,14 @@ import {
   startOfDay,
 } from "date-fns";
 import { cn } from "@/lib/utils";
+import {
+  useListCycleLogs,
+  useUpsertCycleLog,
+  useDeleteCycleLog,
+  useGetCycleSettings,
+  useUpdateCycleSettings,
+} from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -33,8 +41,6 @@ interface TrackerData {
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const STORAGE_KEY = "lhl-menstrual-tracker";
 
 const SYMPTOMS = [
   { id: "cramps", label: "Cramps", emoji: "🫀" },
@@ -71,22 +77,6 @@ const FLOW_CONFIG: Record<FlowLevel, { label: string; color: string; bg: string;
   medium:   { label: "Medium",   color: "text-rose-600", bg: "bg-rose-400", dots: 3 },
   heavy:    { label: "Heavy",    color: "text-rose-700", bg: "bg-rose-600", dots: 4 },
 };
-
-// ─── Storage helpers ──────────────────────────────────────────────────────────
-
-function loadData(): TrackerData {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { logs: [], cycleLength: 28, periodLength: 5 };
-    return JSON.parse(raw) as TrackerData;
-  } catch {
-    return { logs: [], cycleLength: 28, periodLength: 5 };
-  }
-}
-
-function saveData(data: TrackerData) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
 
 // ─── Cycle analysis ───────────────────────────────────────────────────────────
 
@@ -629,38 +619,83 @@ function InsightCard({ icon: Icon, label, value, sub, color }: {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function MenstrualTrackerPage() {
-  const [data, setData] = useState<TrackerData>(loadData);
+  const queryClient = useQueryClient();
+  const { data: rawCycleLogs = [] } = useListCycleLogs();
+  const { data: cycleSettings } = useGetCycleSettings();
+  const upsertCycleLog = useUpsertCycleLog();
+  const deleteCycleLog = useDeleteCycleLog();
+  const updateCycleSettings = useUpdateCycleSettings();
+
+  // Construct TrackerData from API responses
+  const data: TrackerData = useMemo(() => ({
+    logs: rawCycleLogs.map(log => ({
+      date: log.date ?? "",
+      flow: (log.flow as FlowLevel) ?? undefined,
+      symptoms: (() => {
+        try { return JSON.parse(log.symptoms ?? "[]") as string[]; }
+        catch { return []; }
+      })(),
+      mood: log.mood ?? undefined,
+      notes: log.notes ?? "",
+      temperature: log.temperature ?? undefined,
+    })),
+    cycleLength: cycleSettings?.cycleLength ?? 28,
+    periodLength: cycleSettings?.periodLength ?? 5,
+  }), [rawCycleLogs, cycleSettings]);
+
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [logModalDate, setLogModalDate] = useState<Date | null>(null);
   const [activeTab, setActiveTab] = useState<"calendar" | "log" | "insights">("calendar");
   const [showSettings, setShowSettings] = useState(false);
-  const [cycleLen, setCycleLen] = useState(String(data.cycleLength));
-  const [periodLen, setPeriodLen] = useState(String(data.periodLength));
+  const [cycleLen, setCycleLen] = useState("28");
+  const [periodLen, setPeriodLen] = useState("5");
 
-  useEffect(() => { saveData(data); }, [data]);
+  // Sync settings inputs when API data loads
+  useEffect(() => {
+    if (cycleSettings) {
+      setCycleLen(String(cycleSettings.cycleLength ?? 28));
+      setPeriodLen(String(cycleSettings.periodLength ?? 5));
+    }
+  }, [cycleSettings?.cycleLength, cycleSettings?.periodLength]);
 
   const cycleInfo = useMemo(() => analyzeCycles(data), [data]);
 
   function upsertLog(log: DayLog) {
-    setData(d => {
-      const existing = d.logs.findIndex(l => l.date === log.date);
-      const logs = existing >= 0
-        ? d.logs.map((l, i) => i === existing ? log : l)
-        : [...d.logs, log];
-      return { ...d, logs };
-    });
+    upsertCycleLog.mutate(
+      {
+        date: log.date,
+        data: {
+          flow: log.flow ?? null,
+          symptoms: JSON.stringify(log.symptoms),
+          mood: log.mood ?? null,
+          notes: log.notes || null,
+          temperature: log.temperature ?? null,
+        },
+      },
+      { onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/cycle/logs"] }) }
+    );
   }
 
   function deleteLog(date: string) {
-    setData(d => ({ ...d, logs: d.logs.filter(l => l.date !== date) }));
+    deleteCycleLog.mutate(
+      { date },
+      { onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/cycle/logs"] }) }
+    );
   }
 
   function saveSettings() {
-    const cl = parseInt(cycleLen) || 28;
-    const pl = parseInt(periodLen) || 5;
-    setData(d => ({ ...d, cycleLength: Math.min(Math.max(cl, 20), 45), periodLength: Math.min(Math.max(pl, 2), 10) }));
-    setShowSettings(false);
+    const cl = Math.min(Math.max(parseInt(cycleLen) || 28, 20), 45);
+    const pl = Math.min(Math.max(parseInt(periodLen) || 5, 2), 10);
+    updateCycleSettings.mutate(
+      { data: { cycleLength: cl, periodLength: pl } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["/api/cycle/settings"] });
+          setShowSettings(false);
+        },
+      }
+    );
   }
 
   const todayLog = data.logs.find(l => l.date === format(new Date(), "yyyy-MM-dd"));

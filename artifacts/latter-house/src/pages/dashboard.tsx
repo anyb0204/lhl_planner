@@ -12,6 +12,12 @@ import {
   useGenerateEncouragement,
   useGetBackOnTrack,
   useCreateHabit,
+  useListMoodLogs,
+  useUpsertMoodLog,
+  useDeleteMoodLog,
+  useGetQuickNotes,
+  useUpdateQuickNotes,
+  type MoodLog,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -26,7 +32,7 @@ import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Link } from "wouter";
 
-// ─── Mood Tracker (localStorage) ─────────────────────────────────────────────
+// ─── Mood Tracker ─────────────────────────────────────────────────────────────
 
 const MOODS = [
   { emoji: "😊", label: "Grateful", color: "text-amber-500" },
@@ -37,40 +43,48 @@ const MOODS = [
   { emoji: "😴", label: "Tired", color: "text-gray-500" },
 ];
 
-const MOOD_KEY = "lhl-mood-log";
-
-interface MoodEntry { date: string; moodIdx: number; note?: string; }
-
-function loadMoodLog(): MoodEntry[] {
-  try { return JSON.parse(localStorage.getItem(MOOD_KEY) ?? "[]"); }
-  catch { return []; }
-}
-function saveMoodLog(entries: MoodEntry[]) {
-  localStorage.setItem(MOOD_KEY, JSON.stringify(entries));
-}
-
 function MoodWidget() {
   const today = format(startOfToday(), "yyyy-MM-dd");
-  const [log, setLog] = useState<MoodEntry[]>(loadMoodLog);
+  const queryClient = useQueryClient();
+  const { data: moodLogs = [] } = useListMoodLogs();
+  const upsertMood = useUpsertMoodLog();
+  const deleteMood = useDeleteMoodLog();
   const [note, setNote] = useState("");
   const [showNote, setShowNote] = useState(false);
-  const todayEntry = log.find(e => e.date === today);
+
+  const todayEntry = (moodLogs as MoodLog[]).find(e => e.date === today);
 
   function selectMood(idx: number) {
-    const entry: MoodEntry = { date: today, moodIdx: idx };
-    const updated = [entry, ...log.filter(e => e.date !== today)].slice(0, 90);
-    setLog(updated);
-    saveMoodLog(updated);
-    setShowNote(true);
+    upsertMood.mutate(
+      { date: today, data: { moodIdx: idx } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["/api/mood/logs"] });
+          setShowNote(true);
+        },
+      }
+    );
   }
 
   function saveNote() {
-    const updated = log.map(e =>
-      e.date === today ? { ...e, note: note.trim() || undefined } : e
+    if (todayEntry?.moodIdx !== undefined) {
+      upsertMood.mutate(
+        { date: today, data: { moodIdx: todayEntry.moodIdx, note: note.trim() || null } },
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["/api/mood/logs"] });
+            setShowNote(false);
+          },
+        }
+      );
+    }
+  }
+
+  function clearMood() {
+    deleteMood.mutate(
+      { date: today },
+      { onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/mood/logs"] }) }
     );
-    setLog(updated);
-    saveMoodLog(updated);
-    setShowNote(false);
   }
 
   return (
@@ -82,14 +96,14 @@ function MoodWidget() {
       {todayEntry ? (
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">{MOODS[todayEntry.moodIdx].emoji}</span>
-            <span className="text-sm font-medium text-foreground">{MOODS[todayEntry.moodIdx].label}</span>
+            <span className="text-2xl">{MOODS[todayEntry.moodIdx ?? 0]?.emoji}</span>
+            <span className="text-sm font-medium text-foreground">{MOODS[todayEntry.moodIdx ?? 0]?.label}</span>
           </div>
           {todayEntry.note && (
             <p className="text-xs text-muted-foreground italic">"{todayEntry.note}"</p>
           )}
           <button
-            onClick={() => { setShowNote(false); setLog(l => l.filter(e => e.date !== today)); saveMoodLog(log.filter(e => e.date !== today)); }}
+            onClick={clearMood}
             className="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
           >
             Change
@@ -130,16 +144,21 @@ function MoodWidget() {
   );
 }
 
-// ─── Notes Widget (localStorage) ─────────────────────────────────────────────
-
-const NOTES_KEY = "lhl-quick-notes";
+// ─── Notes Widget ─────────────────────────────────────────────────────────────
 
 function NotesWidget() {
-  const [notes, setNotes] = useState(() => {
-    try { return localStorage.getItem(NOTES_KEY) ?? ""; }
-    catch { return ""; }
-  });
+  const { data: notesData } = useGetQuickNotes();
+  const updateNotes = useUpdateQuickNotes();
+  const [notes, setNotes] = useState("");
+  const [initialized, setInitialized] = useState(false);
   const [saved, setSaved] = useState(true);
+
+  useEffect(() => {
+    if (!initialized && notesData?.content !== undefined) {
+      setNotes(notesData.content ?? "");
+      setInitialized(true);
+    }
+  }, [notesData?.content, initialized]);
 
   function handleChange(v: string) {
     setNotes(v);
@@ -149,8 +168,10 @@ function NotesWidget() {
   useEffect(() => {
     if (saved) return;
     const t = setTimeout(() => {
-      localStorage.setItem(NOTES_KEY, notes);
-      setSaved(true);
+      updateNotes.mutate(
+        { data: { content: notes } },
+        { onSuccess: () => setSaved(true) }
+      );
     }, 800);
     return () => clearTimeout(t);
   }, [notes, saved]);

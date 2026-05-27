@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import {
   Package, DollarSign, TrendingUp, Tag, Plus, Trash2,
@@ -9,6 +9,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import {
+  useListSideHustleProducts,
+  useCreateSideHustleProduct,
+  useUpdateSideHustleProduct,
+  useDeleteSideHustleProduct,
+  useMarkProductSold,
+  useListSideHustleSales,
+  type SideHustleProduct as ApiProduct,
+  type SideHustleSale as ApiSale,
+} from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -16,7 +27,7 @@ type Platform = "ebay" | "etsy" | "other";
 type ItemStatus = "active" | "sold" | "draft" | "archived";
 
 interface Product {
-  id: string;
+  id: number;
   title: string;
   platform: Platform;
   status: ItemStatus;
@@ -26,13 +37,13 @@ interface Product {
   category: string;
   notes: string;
   listedDate: string;
-  soldDate?: string;
-  soldPrice?: number;
+  soldDate?: string | null;
+  soldPrice?: number | null;
 }
 
 interface SaleEntry {
-  id: string;
-  productId: string;
+  id: number;
+  productId?: number | null;
   productTitle: string;
   platform: Platform;
   saleDate: string;
@@ -42,26 +53,37 @@ interface SaleEntry {
   costBasis: number;
 }
 
-// ─── Local storage helpers ────────────────────────────────────────────────────
+// ─── API helpers ──────────────────────────────────────────────────────────────
 
-const PRODUCTS_KEY = "lhl-products";
-const SALES_KEY = "lhl-sales";
+function toProduct(r: ApiProduct): Product {
+  return {
+    id: r.id!,
+    title: r.title ?? "",
+    platform: (r.platform as Platform) ?? "etsy",
+    status: (r.status as ItemStatus) ?? "active",
+    listingPrice: r.listingPrice ?? 0,
+    costBasis: r.costBasis ?? 0,
+    quantity: r.quantity ?? 1,
+    category: r.category ?? "",
+    notes: r.notes ?? "",
+    listedDate: r.listedDate ?? format(new Date(), "yyyy-MM-dd"),
+    soldDate: r.soldDate,
+    soldPrice: r.soldPrice,
+  };
+}
 
-function loadProducts(): Product[] {
-  try {
-    return JSON.parse(localStorage.getItem(PRODUCTS_KEY) ?? "[]");
-  } catch { return []; }
-}
-function saveProducts(p: Product[]) {
-  localStorage.setItem(PRODUCTS_KEY, JSON.stringify(p));
-}
-function loadSales(): SaleEntry[] {
-  try {
-    return JSON.parse(localStorage.getItem(SALES_KEY) ?? "[]");
-  } catch { return []; }
-}
-function saveSales(s: SaleEntry[]) {
-  localStorage.setItem(SALES_KEY, JSON.stringify(s));
+function toSale(r: ApiSale): SaleEntry {
+  return {
+    id: r.id!,
+    productId: r.productId,
+    productTitle: r.productTitle ?? "",
+    platform: (r.platform as Platform) ?? "etsy",
+    saleDate: r.saleDate ?? "",
+    soldPrice: r.soldPrice ?? 0,
+    fees: r.fees ?? 0,
+    shippingCost: r.shippingCost ?? 0,
+    costBasis: r.costBasis ?? 0,
+  };
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -266,8 +288,17 @@ type Tab = "inventory" | "analytics" | "calculator";
 
 export default function SideHustlePage() {
   const [, setLocation] = useLocation();
-  const [products, setProducts] = useState<Product[]>(loadProducts);
-  const [sales, setSales] = useState<SaleEntry[]>(loadSales);
+  const queryClient = useQueryClient();
+  const { data: rawProducts = [] } = useListSideHustleProducts();
+  const { data: rawSales = [] } = useListSideHustleSales();
+  const createProduct = useCreateSideHustleProduct();
+  const updateProductMutation = useUpdateSideHustleProduct();
+  const deleteProductMutation = useDeleteSideHustleProduct();
+  const markSoldMutation = useMarkProductSold();
+
+  const products: Product[] = (rawProducts as ApiProduct[]).map(toProduct);
+  const sales: SaleEntry[] = (rawSales as ApiSale[]).map(toSale);
+
   const [tab, setTab] = useState<Tab>("inventory");
   const [showForm, setShowForm] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
@@ -282,55 +313,82 @@ export default function SideHustlePage() {
   const [calcPaypalFee, setCalcPaypalFee] = useState("3.0");
   const [calcShipping, setCalcShipping] = useState("5");
 
-  useEffect(() => { saveProducts(products); }, [products]);
-  useEffect(() => { saveSales(sales); }, [sales]);
-
   // ── CRUD ──────────────────────────────────────────────────────────────────
 
   function addProduct(form: Partial<Product>) {
-    const p: Product = {
-      id: crypto.randomUUID(),
-      title: form.title ?? "",
-      platform: form.platform ?? "etsy",
-      status: form.status ?? "active",
-      listingPrice: form.listingPrice ?? 0,
-      costBasis: form.costBasis ?? 0,
-      quantity: form.quantity ?? 1,
-      category: form.category ?? "",
-      notes: form.notes ?? "",
-      listedDate: form.listedDate ?? format(new Date(), "yyyy-MM-dd"),
-    };
-    setProducts(prev => [p, ...prev]);
-    setShowForm(false);
+    createProduct.mutate(
+      {
+        data: {
+          title: form.title ?? "",
+          platform: form.platform ?? "etsy",
+          status: form.status ?? "active",
+          listingPrice: form.listingPrice ?? 0,
+          costBasis: form.costBasis ?? 0,
+          quantity: form.quantity ?? 1,
+          category: form.category ?? null,
+          notes: form.notes ?? null,
+          listedDate: form.listedDate ?? format(new Date(), "yyyy-MM-dd"),
+        },
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["/api/business/products"] });
+          setShowForm(false);
+        },
+      }
+    );
   }
 
   function updateProduct(form: Partial<Product>) {
     if (!editProduct) return;
-    setProducts(prev => prev.map(p => p.id === editProduct.id ? { ...p, ...form } : p));
-    setEditProduct(null);
+    updateProductMutation.mutate(
+      {
+        id: editProduct.id,
+        data: {
+          title: form.title,
+          platform: form.platform,
+          status: form.status,
+          listingPrice: form.listingPrice,
+          costBasis: form.costBasis,
+          quantity: form.quantity,
+          category: form.category ?? null,
+          notes: form.notes ?? null,
+          listedDate: form.listedDate,
+        },
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["/api/business/products"] });
+          setEditProduct(null);
+        },
+      }
+    );
   }
 
-  function deleteProduct(id: string) {
-    setProducts(prev => prev.filter(p => p.id !== id));
+  function deleteProduct(id: number) {
+    deleteProductMutation.mutate(
+      { id },
+      { onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/business/products"] }) }
+    );
   }
 
   function markSold(product: Product) {
-    const entry: SaleEntry = {
-      id: crypto.randomUUID(),
-      productId: product.id,
-      productTitle: product.title,
-      platform: product.platform,
-      saleDate: format(new Date(), "yyyy-MM-dd"),
-      soldPrice: product.listingPrice,
-      fees: product.listingPrice * 0.10,
-      shippingCost: 5,
-      costBasis: product.costBasis,
-    };
-    setSales(prev => [entry, ...prev]);
-    setProducts(prev => prev.map(p => p.id === product.id
-      ? { ...p, status: "sold", soldDate: entry.saleDate, soldPrice: product.listingPrice }
-      : p
-    ));
+    markSoldMutation.mutate(
+      {
+        id: product.id,
+        data: {
+          soldPrice: product.listingPrice,
+          fees: product.listingPrice * 0.10,
+          shippingCost: 5,
+        },
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["/api/business/products"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/business/sales"] });
+        },
+      }
+    );
   }
 
   // ── Analytics ────────────────────────────────────────────────────────────
