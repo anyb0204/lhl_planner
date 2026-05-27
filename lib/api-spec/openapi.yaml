@@ -18,6 +18,10 @@ tags:
     description: Life tracker modules
   - name: Auth
     description: Browser and mobile authentication endpoints.
+  - name: lifestyle
+    description: Cycle tracker, mood, notes, vision board
+  - name: business
+    description: Side hustle products and sales
 paths:
   /special-dates:
     get:
@@ -1117,6 +1121,384 @@ paths:
               schema:
                 $ref: '#/components/schemas/LogoutSuccess'
 
+  /cycle/logs:
+    get:
+      operationId: listCycleLogs
+      tags: [lifestyle]
+      summary: List cycle logs
+      parameters:
+        - name: month
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CycleLog"
+  /cycle/logs/{date}:
+    put:
+      operationId: upsertCycleLog
+      tags: [lifestyle]
+      summary: Upsert cycle log for a date
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertCycleLogBody"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CycleLog"
+    delete:
+      operationId: deleteCycleLog
+      tags: [lifestyle]
+      summary: Delete cycle log for a date
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+  /cycle/settings:
+    get:
+      operationId: getCycleSettings
+      tags: [lifestyle]
+      summary: Get cycle settings
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CycleSettings"
+    put:
+      operationId: updateCycleSettings
+      tags: [lifestyle]
+      summary: Update cycle settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCycleSettingsBody"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CycleSettings"
+  /mood/logs:
+    get:
+      operationId: listMoodLogs
+      tags: [lifestyle]
+      summary: List mood logs
+      parameters:
+        - name: month
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MoodLog"
+  /mood/logs/{date}:
+    put:
+      operationId: upsertMoodLog
+      tags: [lifestyle]
+      summary: Upsert mood log for a date
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertMoodLogBody"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MoodLog"
+    delete:
+      operationId: deleteMoodLog
+      tags: [lifestyle]
+      summary: Delete mood log for a date
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+  /notes/quick:
+    get:
+      operationId: getQuickNotes
+      tags: [lifestyle]
+      summary: Get quick notes
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuickNotes"
+    put:
+      operationId: updateQuickNotes
+      tags: [lifestyle]
+      summary: Update quick notes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateQuickNotesBody"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuickNotes"
+  /vision-board:
+    get:
+      operationId: listVisionBoardItems
+      tags: [lifestyle]
+      summary: List vision board items
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VisionBoardItem"
+    post:
+      operationId: createVisionBoardItem
+      tags: [lifestyle]
+      summary: Create vision board item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateVisionBoardItemBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VisionBoardItem"
+  /vision-board/{id}:
+    patch:
+      operationId: updateVisionBoardItem
+      tags: [lifestyle]
+      summary: Update vision board item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateVisionBoardItemBody"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VisionBoardItem"
+    delete:
+      operationId: deleteVisionBoardItem
+      tags: [lifestyle]
+      summary: Delete vision board item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+  /business/products:
+    get:
+      operationId: listSideHustleProducts
+      tags: [business]
+      summary: List side hustle products
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SideHustleProduct"
+    post:
+      operationId: createSideHustleProduct
+      tags: [business]
+      summary: Create product listing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSideHustleProductBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SideHustleProduct"
+  /business/products/{id}:
+    patch:
+      operationId: updateSideHustleProduct
+      tags: [business]
+      summary: Update product listing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSideHustleProductBody"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SideHustleProduct"
+    delete:
+      operationId: deleteSideHustleProduct
+      tags: [business]
+      summary: Delete product listing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+  /business/products/{id}/sell:
+    post:
+      operationId: markProductSold
+      tags: [business]
+      summary: Mark product as sold and record sale
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarkProductSoldBody"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SideHustleProduct"
+  /business/sales:
+    get:
+      operationId: listSideHustleSales
+      tags: [business]
+      summary: List side hustle sales
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SideHustleSale"
+    post:
+      operationId: createSideHustleSale
+      tags: [business]
+      summary: Create sale record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSideHustleSaleBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SideHustleSale"
+  /business/sales/{id}:
+    delete:
+      operationId: deleteSideHustleSale
+      tags: [business]
+      summary: Delete sale record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
 components:
   parameters:
     AuthorizationSessionHeader:
@@ -2184,3 +2566,167 @@ components:
       properties:
         error:
           type: string
+    CycleLog:
+      type: object
+      properties:
+        id: { type: integer }
+        userId: { type: string }
+        date: { type: string }
+        flow: { type: string, nullable: true }
+        symptoms: { type: string, nullable: true }
+        mood: { type: string, nullable: true }
+        notes: { type: string, nullable: true }
+        temperature: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    UpsertCycleLogBody:
+      type: object
+      properties:
+        flow: { type: string, nullable: true }
+        symptoms: { type: string, nullable: true }
+        mood: { type: string, nullable: true }
+        notes: { type: string, nullable: true }
+        temperature: { type: string, nullable: true }
+    CycleSettings:
+      type: object
+      properties:
+        userId: { type: string }
+        cycleLength: { type: integer }
+        periodLength: { type: integer }
+    UpdateCycleSettingsBody:
+      type: object
+      required: [cycleLength, periodLength]
+      properties:
+        cycleLength: { type: integer, minimum: 20, maximum: 45 }
+        periodLength: { type: integer, minimum: 2, maximum: 10 }
+    MoodLog:
+      type: object
+      properties:
+        id: { type: integer }
+        userId: { type: string }
+        date: { type: string }
+        moodIdx: { type: integer }
+        note: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+    UpsertMoodLogBody:
+      type: object
+      required: [moodIdx]
+      properties:
+        moodIdx: { type: integer }
+        note: { type: string, nullable: true }
+    QuickNotes:
+      type: object
+      properties:
+        userId: { type: string }
+        content: { type: string }
+    UpdateQuickNotesBody:
+      type: object
+      required: [content]
+      properties:
+        content: { type: string }
+    VisionBoardItem:
+      type: object
+      properties:
+        id: { type: integer }
+        userId: { type: string }
+        type: { type: string }
+        content: { type: string }
+        caption: { type: string, nullable: true }
+        category: { type: string }
+        color: { type: string, nullable: true }
+        pinned: { type: boolean }
+        createdAt: { type: string, format: date-time }
+    CreateVisionBoardItemBody:
+      type: object
+      required: [type, content, category]
+      properties:
+        type: { type: string }
+        content: { type: string }
+        caption: { type: string, nullable: true }
+        category: { type: string }
+        color: { type: string, nullable: true }
+        pinned: { type: boolean }
+    UpdateVisionBoardItemBody:
+      type: object
+      properties:
+        content: { type: string }
+        caption: { type: string, nullable: true }
+        category: { type: string }
+        color: { type: string, nullable: true }
+        pinned: { type: boolean }
+    SideHustleProduct:
+      type: object
+      properties:
+        id: { type: integer }
+        userId: { type: string }
+        title: { type: string }
+        platform: { type: string }
+        status: { type: string }
+        listingPrice: { type: number }
+        costBasis: { type: number }
+        quantity: { type: integer }
+        category: { type: string, nullable: true }
+        notes: { type: string, nullable: true }
+        listedDate: { type: string }
+        soldDate: { type: string, nullable: true }
+        soldPrice: { type: number, nullable: true }
+        createdAt: { type: string, format: date-time }
+    CreateSideHustleProductBody:
+      type: object
+      required: [title, platform, listedDate]
+      properties:
+        title: { type: string }
+        platform: { type: string }
+        status: { type: string }
+        listingPrice: { type: number }
+        costBasis: { type: number }
+        quantity: { type: integer }
+        category: { type: string, nullable: true }
+        notes: { type: string, nullable: true }
+        listedDate: { type: string }
+    UpdateSideHustleProductBody:
+      type: object
+      properties:
+        title: { type: string }
+        platform: { type: string }
+        status: { type: string }
+        listingPrice: { type: number }
+        costBasis: { type: number }
+        quantity: { type: integer }
+        category: { type: string, nullable: true }
+        notes: { type: string, nullable: true }
+        listedDate: { type: string }
+        soldDate: { type: string, nullable: true }
+        soldPrice: { type: number, nullable: true }
+    MarkProductSoldBody:
+      type: object
+      properties:
+        soldPrice: { type: number }
+        fees: { type: number }
+        shippingCost: { type: number }
+    SideHustleSale:
+      type: object
+      properties:
+        id: { type: integer }
+        userId: { type: string }
+        productId: { type: integer, nullable: true }
+        productTitle: { type: string }
+        platform: { type: string }
+        saleDate: { type: string }
+        soldPrice: { type: number }
+        fees: { type: number }
+        shippingCost: { type: number }
+        costBasis: { type: number }
+        createdAt: { type: string, format: date-time }
+    CreateSideHustleSaleBody:
+      type: object
+      required: [productTitle, platform, saleDate, soldPrice]
+      properties:
+        productId: { type: integer, nullable: true }
+        productTitle: { type: string }
+        platform: { type: string }
+        saleDate: { type: string }
+        soldPrice: { type: number }
+        fees: { type: number }
+        shippingCost: { type: number }
+        costBasis: { type: number }

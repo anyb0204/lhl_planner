@@ -8,6 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import { AppLayout } from "@/components/layout/app-layout";
 import { TierContext, type Tier } from "@/contexts/TierContext";
+import LandingPage from "@/pages/landing";
 
 import DailyPlanner from "@/pages/daily";
 import DayAtAGlance from "@/pages/day-at-a-glance";
@@ -36,6 +37,10 @@ import DashboardPage from "@/pages/dashboard";
 import YearAtAGlance from "@/pages/year-at-a-glance";
 import AccountSettingsPage from "@/pages/account-settings";
 import OnboardingPage from "@/pages/onboarding";
+import SideHustlePage from "@/pages/side-hustle/index";
+import AIAssistantPage from "@/pages/ai-assistant";
+import VisionBoardPage from "@/pages/vision-board";
+import MenstrualTrackerPage from "@/pages/menstrual-tracker";
 import { RemindersProvider } from "@/contexts/RemindersContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 
@@ -288,6 +293,10 @@ function Router() {
         <Route path="/trackers/health" component={HealthConditions} />
         <Route path="/trackers/financial" component={FinancialTracker} />
         <Route path="/trackers/goals" component={GoalsTracker} />
+        <Route path="/side-hustle" component={SideHustlePage} />
+        <Route path="/ai-assistant" component={AIAssistantPage} />
+        <Route path="/vision-board" component={VisionBoardPage} />
+        <Route path="/cycle-tracker" component={MenstrualTrackerPage} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>
@@ -339,7 +348,8 @@ function AppRouter() {
   }, [justSubscribed, isSignedIn, setLocation]);
 
   if (!isLoaded && !timedOut) return <Spinner />;
-  if (!isSignedIn) return <LoginScreen />;
+  // Show landing page for non-authenticated visitors (auth routes handled by parent Switch)
+  if (!isSignedIn) return <LandingPage />;
   if (tierStatus === "loading") return <Spinner />;
 
   const tier: Tier = tierStatus;

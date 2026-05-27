@@ -3,8 +3,8 @@ import {
   BookOpen, Calendar, CalendarDays, CalendarRange, Brain, Sparkles,
   Pill, DollarSign, Target, CalendarCheck, Activity,
   CreditCard, Home, LogOut, Sun, HeartPulse, TrendingUp, Lock,
-  CheckSquare, BookHeart, Flame, Moon, Search, LayoutDashboard, Settings, User,
-  Menu, X, ScrollText, HelpCircle,
+  CheckSquare, BookHeart, Flame, Moon, Search, LayoutDashboard, Settings,
+  Menu, X, ScrollText, HelpCircle, ShoppingBag, Wand2, ImageIcon, Droplets,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useClerk } from "@clerk/react";
@@ -27,6 +27,10 @@ const mainNavigation = [
   { name: "Habit Tracker", short: "Habits", href: "/habits", icon: Flame },
   { name: "Brain Dump", short: "Brain", href: "/brain-dump", icon: Brain },
   { name: "Truth Generator", short: "Truth", href: "/truth-generator", icon: Sparkles },
+  { name: "Side Hustle Hub", short: "Hustle", href: "/side-hustle", icon: ShoppingBag },
+  { name: "AI Assistant", short: "AI", href: "/ai-assistant", icon: Wand2 },
+  { name: "Vision Board", short: "Vision", href: "/vision-board", icon: ImageIcon },
+  { name: "Cycle Tracker", short: "Cycle", href: "/cycle-tracker", icon: Droplets },
 ];
 
 const trackerNavigation = [
@@ -313,6 +317,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 { name: "Habit Tracker", href: "/habits", icon: Flame },
                 { name: "Brain Dump", href: "/brain-dump", icon: Brain },
                 { name: "Truth Generator", href: "/truth-generator", icon: Sparkles },
+                { name: "Side Hustle Hub", href: "/side-hustle", icon: ShoppingBag },
+                { name: "AI Assistant", href: "/ai-assistant", icon: Wand2 },
+                { name: "Vision Board", href: "/vision-board", icon: ImageIcon },
+                { name: "Cycle Tracker", href: "/cycle-tracker", icon: Droplets },
               ].map(item => (
                 <Link key={item.href} href={item.href} className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
