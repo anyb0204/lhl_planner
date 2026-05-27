@@ -18,12 +18,163 @@ import {
   BookOpen, Calendar, CalendarDays, CheckSquare, BookHeart, Flame,
   Brain, Sparkles, Target, DollarSign, Pill, CalendarCheck,
   TrendingUp, Heart, ArrowRight, Star, RefreshCw, RotateCcw, Plus, Check, Clock,
+  Smile, StickyNote, ShoppingBag, Wand2, ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format, startOfToday, parseISO, differenceInDays } from "date-fns";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Link } from "wouter";
+
+// ─── Mood Tracker (localStorage) ─────────────────────────────────────────────
+
+const MOODS = [
+  { emoji: "😊", label: "Grateful", color: "text-amber-500" },
+  { emoji: "😌", label: "Peaceful", color: "text-emerald-500" },
+  { emoji: "💪", label: "Motivated", color: "text-blue-500" },
+  { emoji: "😔", label: "Heavy", color: "text-indigo-500" },
+  { emoji: "😰", label: "Anxious", color: "text-red-500" },
+  { emoji: "😴", label: "Tired", color: "text-gray-500" },
+];
+
+const MOOD_KEY = "lhl-mood-log";
+
+interface MoodEntry { date: string; moodIdx: number; note?: string; }
+
+function loadMoodLog(): MoodEntry[] {
+  try { return JSON.parse(localStorage.getItem(MOOD_KEY) ?? "[]"); }
+  catch { return []; }
+}
+function saveMoodLog(entries: MoodEntry[]) {
+  localStorage.setItem(MOOD_KEY, JSON.stringify(entries));
+}
+
+function MoodWidget() {
+  const today = format(startOfToday(), "yyyy-MM-dd");
+  const [log, setLog] = useState<MoodEntry[]>(loadMoodLog);
+  const [note, setNote] = useState("");
+  const [showNote, setShowNote] = useState(false);
+  const todayEntry = log.find(e => e.date === today);
+
+  function selectMood(idx: number) {
+    const entry: MoodEntry = { date: today, moodIdx: idx };
+    const updated = [entry, ...log.filter(e => e.date !== today)].slice(0, 90);
+    setLog(updated);
+    saveMoodLog(updated);
+    setShowNote(true);
+  }
+
+  function saveNote() {
+    const updated = log.map(e =>
+      e.date === today ? { ...e, note: note.trim() || undefined } : e
+    );
+    setLog(updated);
+    saveMoodLog(updated);
+    setShowNote(false);
+  }
+
+  return (
+    <div className="journal-page p-5 space-y-3">
+      <div className="flex items-center gap-2">
+        <Smile className="w-4 h-4 text-primary" />
+        <h2 className="font-serif text-base font-medium text-foreground">Today's Mood</h2>
+      </div>
+      {todayEntry ? (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">{MOODS[todayEntry.moodIdx].emoji}</span>
+            <span className="text-sm font-medium text-foreground">{MOODS[todayEntry.moodIdx].label}</span>
+          </div>
+          {todayEntry.note && (
+            <p className="text-xs text-muted-foreground italic">"{todayEntry.note}"</p>
+          )}
+          <button
+            onClick={() => { setShowNote(false); setLog(l => l.filter(e => e.date !== today)); saveMoodLog(log.filter(e => e.date !== today)); }}
+            className="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+          >
+            Change
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <p className="text-xs text-muted-foreground">How are you feeling today?</p>
+          <div className="grid grid-cols-3 gap-2">
+            {MOODS.map((m, i) => (
+              <button
+                key={m.label}
+                onClick={() => selectMood(i)}
+                className="flex flex-col items-center gap-1 p-2 rounded-lg border border-border/40 hover:border-primary/40 hover:bg-primary/5 transition-all"
+              >
+                <span className="text-xl">{m.emoji}</span>
+                <span className="text-[10px] text-muted-foreground">{m.label}</span>
+              </button>
+            ))}
+          </div>
+          {showNote && (
+            <div className="flex gap-2">
+              <input
+                value={note}
+                onChange={e => setNote(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter") saveNote(); }}
+                placeholder="Add a note (optional)"
+                className="flex-1 text-xs border border-input rounded-md px-2.5 py-1.5 bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+              />
+              <button onClick={saveNote} className="text-xs text-primary font-medium px-2">
+                Save
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Notes Widget (localStorage) ─────────────────────────────────────────────
+
+const NOTES_KEY = "lhl-quick-notes";
+
+function NotesWidget() {
+  const [notes, setNotes] = useState(() => {
+    try { return localStorage.getItem(NOTES_KEY) ?? ""; }
+    catch { return ""; }
+  });
+  const [saved, setSaved] = useState(true);
+
+  function handleChange(v: string) {
+    setNotes(v);
+    setSaved(false);
+  }
+
+  useEffect(() => {
+    if (saved) return;
+    const t = setTimeout(() => {
+      localStorage.setItem(NOTES_KEY, notes);
+      setSaved(true);
+    }, 800);
+    return () => clearTimeout(t);
+  }, [notes, saved]);
+
+  return (
+    <div className="journal-page p-5 space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <StickyNote className="w-4 h-4 text-primary" />
+          <h2 className="font-serif text-base font-medium text-foreground">Quick Notes</h2>
+        </div>
+        {!saved && <span className="text-[10px] text-muted-foreground/60">Saving…</span>}
+        {saved && notes && <span className="text-[10px] text-emerald-600">Saved</span>}
+      </div>
+      <textarea
+        value={notes}
+        onChange={e => handleChange(e.target.value)}
+        placeholder="Capture a thought, idea, or reminder…"
+        rows={4}
+        className="w-full bg-transparent text-sm text-foreground placeholder:opacity-30 focus:outline-none resize-none leading-relaxed"
+      />
+    </div>
+  );
+}
 
 type Stat = { label: string; value: number | string; sub?: string; color: string; href: string };
 
@@ -487,6 +638,54 @@ export default function DashboardPage() {
           </div>
         </section>
       )}
+
+      {/* Mood + Notes row */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <MoodWidget />
+        <NotesWidget />
+      </div>
+
+      {/* New feature quick links */}
+      <section className="space-y-3">
+        <h2 className="font-serif text-base font-medium text-foreground flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-primary" /> New Tools
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <Link href="/side-hustle">
+            <div className="journal-page p-4 flex items-center gap-3 cursor-pointer hover:shadow-md hover:border-primary/40 transition-all group">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+                <ShoppingBag className="w-5 h-5 text-amber-700" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">Side Hustle Hub</p>
+                <p className="text-xs text-muted-foreground">Track listings, sales & profits</p>
+              </div>
+            </div>
+          </Link>
+          <Link href="/ai-assistant">
+            <div className="journal-page p-4 flex items-center gap-3 cursor-pointer hover:shadow-md hover:border-primary/40 transition-all group">
+              <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
+                <Wand2 className="w-5 h-5 text-purple-700" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">AI Assistant</p>
+                <p className="text-xs text-muted-foreground">Etsy titles, captions & more</p>
+              </div>
+            </div>
+          </Link>
+          <Link href="/vision-board">
+            <div className="journal-page p-4 flex items-center gap-3 cursor-pointer hover:shadow-md hover:border-primary/40 transition-all group">
+              <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
+                <ImageIcon className="w-5 h-5 text-rose-700" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">Vision Board</p>
+                <p className="text-xs text-muted-foreground">See the life you're building</p>
+              </div>
+            </div>
+          </Link>
+        </div>
+      </section>
 
       {/* Quick navigation grid */}
       <section className="space-y-3">
