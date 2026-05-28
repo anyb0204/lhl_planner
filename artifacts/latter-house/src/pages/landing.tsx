@@ -120,7 +120,7 @@ const steps = [
 ];
 
 const reasons = [
-  "Built specifically for people 45–70 rebuilding and thriving",
+  "Built for those of us in our 40s and beyond",
   "Faith-centered with scripture and prayer tools",
   "AI-powered planning and encouragement",
   "Private, secure — your data belongs to you",
