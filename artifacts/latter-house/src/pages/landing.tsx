@@ -125,7 +125,6 @@ const reasons = [
   "AI-powered planning and encouragement",
   "Private, secure — your data belongs to you",
   "Works beautifully on any device",
-  "Trusted by thousands of people in their next chapter",
 ];
 
 function StarRating({ count }: { count: number }) {
