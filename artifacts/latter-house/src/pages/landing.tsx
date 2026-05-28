@@ -600,12 +600,6 @@ export default function LandingPage() {
             </Button>
           </div>
 
-          <div className="flex items-center justify-center gap-2">
-            <Zap className="w-4 h-4" style={{ color: "hsl(43,52%,68%)" }} />
-            <p className="text-sm font-medium" style={{ color: "hsl(45,35%,78%)" }}>
-              Join thousands of people designing their greatest chapter.
-            </p>
-          </div>
         </div>
       </section>
 
