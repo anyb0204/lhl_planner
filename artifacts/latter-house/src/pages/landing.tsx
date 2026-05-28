@@ -120,12 +120,12 @@ const steps = [
 ];
 
 const reasons = [
-  "Built specifically for women 45–70 rebuilding and thriving",
+  "Built specifically for people 45–70 rebuilding and thriving",
   "Faith-centered with scripture and prayer tools",
   "AI-powered planning and encouragement",
   "Private, secure — your data belongs to you",
   "Works beautifully on any device",
-  "Trusted by thousands of women in their next chapter",
+  "Trusted by thousands of people in their next chapter",
 ];
 
 function StarRating({ count }: { count: number }) {
@@ -323,7 +323,7 @@ export default function LandingPage() {
           {/* Sub-headline */}
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-serif italic">
             A beautiful digital life system for rebuilding, organizing, creating income,
-            and rediscovering purpose — designed for women in the second half of life.
+            and rediscovering purpose — designed for those of us in the second half of life.
           </p>
 
           {/* Scripture badge */}
@@ -380,7 +380,7 @@ export default function LandingPage() {
               A complete life management system
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-serif italic">
-              Thoughtfully designed for women who are rebuilding, reimagining, and rising
+              Thoughtfully designed for those of us who are rebuilding, reimagining, and rising
               into the fullness of who they were created to be.
             </p>
           </div>
@@ -454,7 +454,7 @@ export default function LandingPage() {
                 </h2>
                 <p className="text-muted-foreground leading-relaxed">
                   Most planners are designed for busy 30-somethings. Latter House Life was created
-                  for women in the second half — navigating transitions, rebuilding finances,
+                  for those of us in the second half — navigating transitions, rebuilding finances,
                   pursuing purpose, and walking deeper in faith.
                 </p>
               </div>
@@ -535,7 +535,7 @@ export default function LandingPage() {
           <div className="text-center space-y-4">
             <p className="text-xs uppercase tracking-widest font-medium text-primary">Real stories</p>
             <h2 className="text-4xl md:text-5xl font-serif font-semibold text-foreground">
-              Women reclaiming their next chapter
+              People reclaiming their next chapter
             </h2>
           </div>
 
@@ -604,7 +604,7 @@ export default function LandingPage() {
           <div className="flex items-center justify-center gap-2">
             <Zap className="w-4 h-4" style={{ color: "hsl(43,52%,68%)" }} />
             <p className="text-sm font-medium" style={{ color: "hsl(45,35%,78%)" }}>
-              Join thousands of women designing their greatest chapter.
+              Join thousands of people designing their greatest chapter.
             </p>
           </div>
         </div>
