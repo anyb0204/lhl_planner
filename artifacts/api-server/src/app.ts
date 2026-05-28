@@ -87,7 +87,7 @@ if (process.env.NODE_ENV === "production") {
   if (existsSync(distPath)) {
     app.use(express.static(distPath));
     // SPA fallback — serve index.html for any non-API route
-    app.get("*", (req, res) => {
+    app.get("/{*splat}", (req, res) => {
       if (!req.path.startsWith("/api/")) {
         res.sendFile(path.join(distPath, "index.html"));
       }
