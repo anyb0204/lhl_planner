@@ -158,13 +158,6 @@ function AnimatedGradientBg({ className }: { className?: string }) {
           animation: "pulse 10s ease-in-out infinite 3s",
         }}
       />
-      <div
-        className="absolute top-1/3 right-1/3 w-[400px] h-[400px] rounded-full opacity-10"
-        style={{
-          background: "radial-gradient(circle, hsl(138,30%,45%) 0%, transparent 70%)",
-          animation: "pulse 12s ease-in-out infinite 6s",
-        }}
-      />
     </div>
   );
 }
@@ -320,7 +313,7 @@ export default function LandingPage() {
           {/* Main headline */}
           <div className="space-y-3">
             <h1
-              className="text-5xl sm:text-6xl md:text-7xl font-serif font-semibold leading-tight text-foreground"
+              className="text-5xl sm:text-6xl md:text-7xl font-serif font-normal leading-tight text-foreground"
             >
               The latter years can become{" "}
               <span className="gradient-text">the greatest years.</span>
