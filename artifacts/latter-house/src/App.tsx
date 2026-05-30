@@ -72,20 +72,20 @@ const clerkAppearance = {
     logoImageUrl: `${window.location.origin}${basePath}/lhl-logo.png`,
   },
   variables: {
-    colorPrimary: "hsl(43, 52%, 68%)",
-    colorForeground: "hsl(152, 40%, 14%)",
-    colorMutedForeground: "hsl(152, 22%, 40%)",
+    colorPrimary: "#1F6A63",
+    colorForeground: "#4A4A47",
+    colorMutedForeground: "#5E6A65",
     colorDanger: "hsl(0, 60%, 50%)",
-    colorBackground: "hsl(0, 0%, 100%)",
-    colorInput: "hsl(138, 14%, 91%)",
-    colorInputForeground: "hsl(152, 40%, 14%)",
-    colorNeutral: "hsl(138, 18%, 78%)",
-    fontFamily: "'Inter', sans-serif",
+    colorBackground: "#FFFFFF",
+    colorInput: "#F4F1E9",
+    colorInputForeground: "#4A4A47",
+    colorNeutral: "#C8C5BD",
+    fontFamily: "'Aptos', 'Inter', system-ui, sans-serif",
     borderRadius: "0.3rem",
   },
   elements: {
     rootBox: "w-full flex justify-center",
-    cardBox: "rounded-xl w-full max-w-[440px] overflow-hidden shadow-xl border border-[hsl(138,18%,72%)]",
+    cardBox: "rounded-xl w-full max-w-[440px] overflow-hidden shadow-xl border border-[#C8C5BD]",
     card: "!shadow-none !border-0 !rounded-none",
     footer: "!shadow-none !border-0 !rounded-none",
     headerTitle: "font-serif text-foreground",
@@ -101,7 +101,7 @@ const clerkAppearance = {
     logoBox: "flex justify-center",
     logoImage: "h-16 w-16 object-contain",
     socialButtonsBlockButton: "border-border",
-    formButtonPrimary: "bg-primary text-primary-foreground hover:bg-primary/90",
+    formButtonPrimary: "bg-primary text-primary-foreground hover:bg-primary-hover",
     formFieldInput: "bg-input border-border text-foreground",
     footerAction: "bg-transparent",
     dividerLine: "bg-border",
@@ -123,38 +123,38 @@ function Spinner() {
 function LoginScreen() {
   const [, setLocation] = useLocation();
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-5 py-10" style={{ backgroundColor: "hsl(138, 20%, 48%)" }}>
+    <div className="min-h-screen flex flex-col items-center justify-center px-5 py-10" style={{ backgroundColor: "#1F6A63" }}>
       <div className="w-full max-w-sm text-center space-y-7">
         <div className="flex flex-col items-center gap-4">
           <img src="/lhl-logo.png" alt="Latter House Life" className="w-20 h-20 sm:w-24 sm:h-24 object-contain"
             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
           <div>
-            <h1 className="font-normal leading-tight" style={{ color: "hsl(43, 52%, 68%)", fontFamily: "'Kapakana', cursive", wordSpacing: "-0.1em", fontSize: "clamp(2.2rem, 10vw, 3.75rem)" }}>
+            <h1 className="font-normal leading-tight" style={{ color: "#CDBE8A", fontFamily: "'Kapakana', cursive", wordSpacing: "-0.1em", fontSize: "clamp(2.2rem, 10vw, 3.75rem)" }}>
               Latter House Life
             </h1>
-            <p className="font-serif italic text-base sm:text-lg mt-1" style={{ color: "hsl(43, 52%, 84%)" }}>
+            <p className="font-serif italic text-base sm:text-lg mt-1" style={{ color: "#F4F1E9" }}>
               Your faith-filled planning companion
             </p>
           </div>
         </div>
-        <div className="rounded-lg px-5 py-5 space-y-2" style={{ backgroundColor: "hsl(138, 26%, 28%)", border: "1px solid hsl(138, 22%, 44%)" }}>
-          <p className="font-serif italic text-base leading-relaxed" style={{ color: "hsl(45, 55%, 88%)" }}>
+        <div className="rounded-lg px-5 py-5 space-y-2" style={{ backgroundColor: "#2F4F3E", border: "1px solid #1F6A63" }}>
+          <p className="font-serif italic text-base leading-relaxed" style={{ color: "#F4F1E9" }}>
             "The glory of this present house will be greater than the former."
           </p>
-          <p className="text-xs tracking-widest uppercase" style={{ color: "hsl(43, 52%, 78%)" }}>— Haggai 2:9</p>
+          <p className="text-xs tracking-widest uppercase" style={{ color: "#CDBE8A" }}>— Haggai 2:9</p>
         </div>
         <div className="space-y-3">
-          <p className="text-sm" style={{ color: "hsl(138, 20%, 78%)" }}>
+          <p className="text-sm" style={{ color: "#A8B8A2" }}>
             Sign in to access your personal planner, trackers, and daily encouragement.
           </p>
           <button onClick={() => setLocation("/sign-in")}
-            className="w-full font-medium py-3.5 px-6 rounded-lg text-base shadow-sm transition-opacity hover:opacity-90"
-            style={{ backgroundColor: "hsl(43, 52%, 68%)", color: "hsl(152, 40%, 10%)" }}>
+            className="w-full font-medium py-3.5 px-6 rounded-lg text-base shadow-sm transition-all hover:opacity-90"
+            style={{ backgroundColor: "#CDBE8A", color: "#2F4F3E" }}>
             Sign In
           </button>
           <button onClick={() => setLocation("/sign-up")}
             className="w-full font-medium py-3.5 px-6 rounded-lg text-base transition-all hover:opacity-90"
-            style={{ backgroundColor: "transparent", border: "1px solid hsl(43, 52%, 74%)", color: "hsl(43, 52%, 84%)" }}>
+            style={{ backgroundColor: "transparent", border: "1px solid #CDBE8A", color: "#F4F1E9" }}>
             Create Account
           </button>
         </div>
@@ -165,7 +165,7 @@ function LoginScreen() {
 
 function SignInPage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ backgroundColor: "hsl(138, 26%, 34%)" }}>
+    <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ backgroundColor: "#1F6A63" }}>
       <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} appearance={clerkAppearance} />
     </div>
   );
@@ -173,7 +173,7 @@ function SignInPage() {
 
 function SignUpPage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ backgroundColor: "hsl(138, 26%, 34%)" }}>
+    <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ backgroundColor: "#1F6A63" }}>
       <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} appearance={clerkAppearance} />
     </div>
   );

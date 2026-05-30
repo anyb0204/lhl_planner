@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Dancing+Script:wght@500;600&family=Great+Vibes&family=Italianno&family=Inter:wght@300;400;500;600&family=Kapakana&family=Luxurious+Roman&family=Mrs+Saint+Delafield&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Dancing+Script:wght@500;600&family=Great+Vibes&family=Italianno&family=Inter:wght@300;400;500;600&family=Kapakana&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Luxurious+Roman&family=Montserrat:wght@400;500;600;700&family=Mrs+Saint+Delafield&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
 
 @layer theme, base, clerk, components, utilities;
 @import "tailwindcss";
@@ -26,10 +26,13 @@
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
   --color-primary-border: var(--primary-border);
+  --color-primary-hover: hsl(var(--primary-hover));
+  --color-primary-active: hsl(var(--primary-active));
 
   --color-secondary: hsl(var(--secondary));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
   --color-secondary-border: var(--secondary-border);
+  --color-secondary-hover: hsl(var(--secondary-hover));
 
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
@@ -52,10 +55,14 @@
   --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
+  --color-link: hsl(var(--link));
+  --color-link-hover: hsl(var(--link-hover));
+
   --font-sans: var(--app-font-sans);
   --font-serif: var(--app-font-serif);
   --font-mono: var(--app-font-mono);
   --font-script: var(--app-font-script);
+  --font-display: var(--app-font-display);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -63,93 +70,114 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* ── Latter House Ocean — Brand Token System ── */
 :root {
-  --background: 138 22% 93%;
-  --foreground: 152 40% 14%;
-  --border: 138 18% 72%;
-  
-  --card: 138 20% 97%;
-  --card-foreground: 152 40% 14%;
-  --card-border: 138 22% 64%;
-  
-  /* Softer sage green sidebar */
-  --sidebar: 138 24% 40%;
-  --sidebar-foreground: 45 55% 94%;
-  --sidebar-border: 138 20% 32%;
-  --sidebar-primary: 43 52% 68%;
-  --sidebar-primary-foreground: 138 30% 12%;
-  --sidebar-accent: 138 20% 32%;
-  --sidebar-accent-foreground: 45 55% 94%;
-  --sidebar-ring: 43 52% 68%;
-  
-  --popover: 138 20% 97%;
-  --popover-foreground: 152 40% 14%;
-  --popover-border: 138 18% 78%;
-  
-  --primary: 43 52% 68%;
-  --primary-foreground: 152 40% 10%;
-  
-  --secondary: 138 18% 84%;
-  --secondary-foreground: 152 40% 14%;
-  
-  --muted: 138 16% 88%;
-  --muted-foreground: 152 24% 34%;
-  
-  --accent: 138 20% 86%;
-  --accent-foreground: 152 40% 14%;
-  
+  /* Core palette */
+  --background: 44 33% 94%;          /* #F4F1E9 Accent Cream */
+  --foreground: 60 2% 28%;           /* #4A4A47 Charcoal Text */
+  --border: 44 9% 76%;               /* #C8C5BD */
+
+  --card: 0 0% 100%;                 /* #FFFFFF Card Background */
+  --card-foreground: 60 2% 28%;
+  --card-border: 44 9% 76%;
+
+  /* Sidebar — Primary teal */
+  --sidebar: 174 55% 27%;            /* #1F6A63 Primary */
+  --sidebar-foreground: 44 33% 94%;  /* #F4F1E9 */
+  --sidebar-border: 174 55% 20%;
+  --sidebar-primary: 47 40% 67%;     /* #CDBE8A Secondary Gold */
+  --sidebar-primary-foreground: 148 25% 15%;
+  --sidebar-accent: 174 55% 22%;
+  --sidebar-accent-foreground: 44 33% 94%;
+  --sidebar-ring: 47 40% 67%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 60 2% 28%;
+  --popover-border: 44 9% 76%;
+
+  /* Brand primary — Ocean Teal */
+  --primary: 174 55% 27%;            /* #1F6A63 */
+  --primary-foreground: 0 0% 100%;   /* white */
+  --primary-hover: 176 57% 21%;      /* #17534F */
+  --primary-active: 175 60% 15%;     /* #0F3C38 */
+
+  /* Brand secondary — Gold */
+  --secondary: 47 40% 67%;           /* #CDBE8A */
+  --secondary-foreground: 0 0% 18%;  /* #2F2F2F */
+  --secondary-hover: 46 31% 60%;     /* #B9AA7A */
+
+  /* Muted — Soft teal */
+  --muted: 180 49% 90%;              /* #D9F2F2 Soft Background */
+  --muted-foreground: 104 13% 68%;   /* #A8B8A2 */
+
+  /* Accent — Aqua highlight */
+  --accent: 186 54% 67%;             /* #7ECFD8 */
+  --accent-foreground: 60 2% 28%;
+
   --destructive: 0 60% 50%;
   --destructive-foreground: 0 0% 98%;
-  
-  --input: 130 15% 80%;
-  --ring: 43 52% 68%;
 
-  --app-font-sans: 'Inter', sans-serif;
-  --app-font-serif: 'Playfair Display', Georgia, serif;
+  --input: 44 9% 84%;
+  --ring: 174 55% 27%;               /* Primary */
+
+  /* Link colors */
+  --link: 199 71% 40%;               /* #1E81B0 */
+  --link-hover: 204 85% 25%;         /* #0A4C78 */
+
+  /* Typography */
+  --app-font-sans: 'Aptos', 'Inter', system-ui, sans-serif;
+  --app-font-serif: 'Lora', 'Playfair Display', serif;
   --app-font-mono: Menlo, monospace;
   --app-font-script: 'Dancing Script', cursive;
-  --radius: 0.3rem; 
+  --app-font-display: 'Aptos Display', 'Montserrat', system-ui, sans-serif;
+  --radius: 0.3rem;
 }
 
 .dark {
-  --background: 152 30% 10%;
-  --foreground: 45 50% 88%;
-  --border: 152 25% 20%;
-  
-  --card: 152 30% 13%;
-  --card-foreground: 45 50% 88%;
-  --card-border: 152 25% 20%;
-  
-  --sidebar: 138 26% 20%;
-  --sidebar-foreground: 45 50% 88%;
-  --sidebar-border: 138 22% 16%;
-  --sidebar-primary: 43 52% 72%;
-  --sidebar-primary-foreground: 152 35% 8%;
-  --sidebar-accent: 138 22% 18%;
-  --sidebar-accent-foreground: 45 50% 88%;
-  --sidebar-ring: 43 52% 72%;
-  
-  --popover: 152 30% 13%;
-  --popover-foreground: 45 50% 88%;
-  --popover-border: 152 25% 20%;
-  
-  --primary: 43 52% 72%;
-  --primary-foreground: 152 35% 8%;
-  
-  --secondary: 152 25% 20%;
-  --secondary-foreground: 45 50% 88%;
-  
-  --muted: 152 25% 20%;
-  --muted-foreground: 45 25% 65%;
-  
-  --accent: 152 25% 20%;
-  --accent-foreground: 45 50% 88%;
-  
+  --background: 148 25% 10%;
+  --foreground: 44 33% 90%;
+  --border: 148 25% 22%;
+
+  --card: 148 25% 13%;
+  --card-foreground: 44 33% 90%;
+  --card-border: 148 25% 22%;
+
+  --sidebar: 174 55% 18%;
+  --sidebar-foreground: 44 33% 90%;
+  --sidebar-border: 174 55% 13%;
+  --sidebar-primary: 47 40% 60%;
+  --sidebar-primary-foreground: 148 25% 10%;
+  --sidebar-accent: 174 55% 14%;
+  --sidebar-accent-foreground: 44 33% 90%;
+  --sidebar-ring: 47 40% 60%;
+
+  --popover: 148 25% 13%;
+  --popover-foreground: 44 33% 90%;
+  --popover-border: 148 25% 22%;
+
+  --primary: 174 55% 42%;
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: 174 55% 35%;
+  --primary-active: 174 55% 28%;
+
+  --secondary: 47 40% 55%;
+  --secondary-foreground: 0 0% 90%;
+  --secondary-hover: 47 40% 48%;
+
+  --muted: 148 25% 18%;
+  --muted-foreground: 104 13% 60%;
+
+  --accent: 186 54% 45%;
+  --accent-foreground: 44 33% 90%;
+
   --destructive: 0 50% 40%;
   --destructive-foreground: 0 0% 98%;
-  
-  --input: 152 25% 20%;
-  --ring: 43 52% 72%;
+
+  --input: 148 25% 18%;
+  --ring: 174 55% 42%;
+
+  --link: 199 71% 55%;
+  --link-hover: 199 71% 70%;
 }
 
 @layer base {
@@ -166,9 +194,19 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif tracking-tight text-foreground;
+    @apply tracking-tight;
+    font-family: var(--app-font-display);
+    color: hsl(var(--primary));
+  }
+
+  a {
+    color: hsl(var(--link));
+  }
+
+  a:hover {
+    color: hsl(var(--link-hover));
   }
 }
 

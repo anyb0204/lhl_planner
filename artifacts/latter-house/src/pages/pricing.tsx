@@ -122,7 +122,7 @@ export default function PricingPage() {
   const isPending = checkout.isPending || loadingProducts;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start p-4 md:p-8 pb-24" style={{ backgroundColor: "hsl(138, 26%, 34%)" }}>
+    <div className="min-h-screen flex flex-col items-center justify-start p-4 md:p-8 pb-24" style={{ backgroundColor: "#1F6A63" }}>
       <div className="w-full max-w-5xl space-y-8 mt-4">
 
         {/* Header */}
@@ -133,10 +133,10 @@ export default function PricingPage() {
             className="w-14 h-14 object-contain mx-auto"
             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
           />
-          <h1 className="text-3xl font-serif font-semibold" style={{ color: "hsl(45, 55%, 92%)" }}>
+          <h1 className="text-3xl font-serif font-semibold" style={{ color: "#F4F1E9" }}>
             Choose Your Plan
           </h1>
-          <p className="text-sm" style={{ color: "hsl(138, 20%, 78%)" }}>
+          <p className="text-sm" style={{ color: "#A8B8A2" }}>
             Start free. Upgrade when you're ready.
           </p>
         </div>
@@ -144,9 +144,9 @@ export default function PricingPage() {
         {/* Quote */}
         <div
           className="rounded-lg p-4 text-center"
-          style={{ backgroundColor: "hsl(138, 26%, 28%)", border: "1px solid hsl(138, 22%, 44%)" }}
+          style={{ backgroundColor: "#2F4F3E", border: "1px solid #1F6A63" }}
         >
-          <p className="font-serif italic text-sm" style={{ color: "hsl(45, 55%, 88%)" }}>
+          <p className="font-serif italic text-sm" style={{ color: "#F4F1E9" }}>
             "The glory of this present house will be greater than the former." — Haggai 2:9
           </p>
         </div>
@@ -231,7 +231,7 @@ export default function PricingPage() {
           </p>
         )}
 
-        <p className="text-center text-xs" style={{ color: "hsl(138, 20%, 60%)" }}>
+        <p className="text-center text-xs" style={{ color: "#A8B8A2" }}>
           Secure payment via Stripe · Cancel anytime · No hidden fees
         </p>
       </div>
@@ -247,13 +247,13 @@ interface BillingToggleProps {
 
 function BillingToggle({ cycle, savingsPercent, onChange }: BillingToggleProps) {
   return (
-    <div className="flex items-center justify-center gap-1 p-1 rounded-lg" style={{ backgroundColor: "hsl(138, 18%, 93%)" }}>
+    <div className="flex items-center justify-center gap-1 p-1 rounded-lg" style={{ backgroundColor: "#F4F1E9" }}>
       <button
         onClick={() => onChange("monthly")}
         className="flex-1 py-1 px-2 rounded-md text-xs font-medium transition-all"
         style={cycle === "monthly"
-          ? { backgroundColor: "hsl(0, 0%, 100%)", color: "hsl(152, 40%, 14%)", boxShadow: "0 1px 2px rgba(0,0,0,0.08)" }
-          : { backgroundColor: "transparent", color: "hsl(152, 22%, 50%)" }
+          ? { backgroundColor: "#FFFFFF", color: "#4A4A47", boxShadow: "0 1px 2px rgba(0,0,0,0.08)" }
+          : { backgroundColor: "transparent", color: "#5E6A65" }
         }
       >
         Monthly
@@ -262,13 +262,13 @@ function BillingToggle({ cycle, savingsPercent, onChange }: BillingToggleProps) 
         onClick={() => onChange("yearly")}
         className="flex-1 py-1 px-2 rounded-md text-xs font-medium transition-all flex items-center justify-center gap-1"
         style={cycle === "yearly"
-          ? { backgroundColor: "hsl(0, 0%, 100%)", color: "hsl(152, 40%, 14%)", boxShadow: "0 1px 2px rgba(0,0,0,0.08)" }
-          : { backgroundColor: "transparent", color: "hsl(152, 22%, 50%)" }
+          ? { backgroundColor: "#FFFFFF", color: "#4A4A47", boxShadow: "0 1px 2px rgba(0,0,0,0.08)" }
+          : { backgroundColor: "transparent", color: "#5E6A65" }
         }
       >
         Yearly
         {cycle !== "yearly" && (
-          <span className="px-1 py-0.5 rounded text-xs font-semibold" style={{ backgroundColor: "hsl(43, 52%, 68%)", color: "hsl(152, 40%, 10%)", fontSize: "9px" }}>
+          <span className="px-1 py-0.5 rounded text-xs font-semibold" style={{ backgroundColor: "#CDBE8A", color: "#2F4F3E", fontSize: "9px" }}>
             -{savingsPercent}%
           </span>
         )}
@@ -291,13 +291,13 @@ function PlanCard({
   return (
     <div
       className={`rounded-xl p-6 space-y-4 flex flex-col relative ${highlight ? "ring-2 ring-primary" : ""}`}
-      style={{ backgroundColor: "hsl(0, 0%, 100%)" }}
+      style={{ backgroundColor: "#FFFFFF" }}
     >
       {badge && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
           <span
             className="px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 whitespace-nowrap"
-            style={{ backgroundColor: "hsl(43, 52%, 68%)", color: "hsl(152, 40%, 10%)" }}
+            style={{ backgroundColor: "#CDBE8A", color: "#2F4F3E" }}
           >
             <Sparkles className="w-3 h-3" /> {badge}
           </span>
@@ -305,12 +305,12 @@ function PlanCard({
       )}
 
       <div className="space-y-1">
-        <h2 className="text-lg font-semibold" style={{ color: "hsl(152, 40%, 14%)" }}>{name}</h2>
+        <h2 className="text-lg font-semibold" style={{ color: "#4A4A47" }}>{name}</h2>
         <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-bold font-serif" style={{ color: "hsl(152, 40%, 14%)" }}>{price}</span>
-          <span className="text-sm" style={{ color: "hsl(152, 22%, 50%)" }}>{period}</span>
+          <span className="text-3xl font-bold font-serif" style={{ color: "#4A4A47" }}>{price}</span>
+          <span className="text-sm" style={{ color: "#5E6A65" }}>{period}</span>
         </div>
-        <p className="text-xs leading-relaxed" style={{ color: "hsl(152, 22%, 45%)" }}>{description}</p>
+        <p className="text-xs leading-relaxed" style={{ color: "#5E6A65" }}>{description}</p>
       </div>
 
       {billingToggle && (
@@ -323,11 +323,11 @@ function PlanCard({
 
       <ul className="space-y-2 flex-1">
         {features.map((f, i) => (
-          <li key={i} className="flex items-start gap-2 text-sm" style={{ color: "hsl(152, 40%, 18%)" }}>
+          <li key={i} className="flex items-start gap-2 text-sm" style={{ color: "#4A4A47" }}>
             {f === "Everything in Plus" ? (
               <Lock className="w-3.5 h-3.5 mt-0.5 shrink-0 text-primary" />
             ) : (
-              <Check className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: "hsl(43, 52%, 68%)" }} />
+              <Check className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: "#1F6A63" }} />
             )}
             <span className={f === "Everything in Plus" ? "font-medium" : ""}>{f}</span>
           </li>
@@ -339,10 +339,10 @@ function PlanCard({
         disabled={ctaDisabled}
         className="w-full py-2.5 px-4 rounded-lg text-sm font-semibold transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         style={highlight
-          ? { backgroundColor: "hsl(43, 52%, 68%)", color: "hsl(152, 40%, 10%)" }
+          ? { backgroundColor: "#CDBE8A", color: "#2F4F3E" }
           : isCurrent
-            ? { backgroundColor: "hsl(138, 18%, 88%)", color: "hsl(152, 22%, 40%)" }
-            : { border: "1.5px solid hsl(43, 52%, 68%)", color: "hsl(43, 52%, 52%)", backgroundColor: "transparent" }
+            ? { backgroundColor: "#D9F2F2", color: "#5E6A65" }
+            : { border: "1.5px solid #1F6A63", color: "#1F6A63", backgroundColor: "transparent" }
         }
       >
         {isLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}

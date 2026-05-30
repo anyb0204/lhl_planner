@@ -146,14 +146,14 @@ function AnimatedGradientBg({ className }: { className?: string }) {
       <div
         className="absolute -top-1/2 -left-1/4 w-[800px] h-[800px] rounded-full opacity-20"
         style={{
-          background: "radial-gradient(circle, hsl(138,40%,55%) 0%, transparent 70%)",
+          background: "radial-gradient(circle, #1F6A63 0%, transparent 70%)",
           animation: "pulse 8s ease-in-out infinite",
         }}
       />
       <div
         className="absolute -bottom-1/4 -right-1/4 w-[600px] h-[600px] rounded-full opacity-15"
         style={{
-          background: "radial-gradient(circle, hsl(43,60%,65%) 0%, transparent 70%)",
+          background: "radial-gradient(circle, #CDBE8A 0%, transparent 70%)",
           animation: "pulse 10s ease-in-out infinite 3s",
         }}
       />
@@ -190,7 +190,7 @@ export default function LandingPage() {
         .float-anim { animation: float 6s ease-in-out infinite; }
         .float-anim-2 { animation: float 8s ease-in-out infinite 2s; }
         .gradient-text {
-          background: linear-gradient(135deg, hsl(152,40%,22%) 0%, hsl(43,52%,52%) 50%, hsl(152,40%,22%) 100%);
+          background: linear-gradient(135deg, #1F6A63 0%, #CDBE8A 50%, #1F6A63 100%);
           background-size: 200% auto;
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
@@ -216,7 +216,7 @@ export default function LandingPage() {
             />
             <span
               className="font-normal text-xl"
-              style={{ fontFamily: "'Kapakana', cursive", color: "hsl(152,40%,22%)", wordSpacing: "-0.05em" }}
+              style={{ fontFamily: "'Kapakana', cursive", color: "#1F6A63", wordSpacing: "-0.05em" }}
             >
               Latter House Life
             </span>
@@ -305,7 +305,7 @@ export default function LandingPage() {
         <div className="relative max-w-5xl mx-auto px-5 py-20 text-center space-y-8">
           {/* Eyebrow */}
           <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium tracking-widest uppercase"
-            style={{ backgroundColor: "hsl(138,30%,88%)", color: "hsl(138,40%,28%)" }}>
+            style={{ backgroundColor: "#D9F2F2", color: "#1F6A63" }}>
             <Star className="w-3 h-3 fill-current" /> Your next chapter starts here
           </div>
 
@@ -327,11 +327,11 @@ export default function LandingPage() {
 
           {/* Scripture badge */}
           <div className="inline-block rounded-xl px-6 py-3 max-w-lg mx-auto"
-            style={{ backgroundColor: "hsl(138,26%,28%)", border: "1px solid hsl(138,22%,44%)" }}>
-            <p className="font-serif italic text-sm leading-relaxed" style={{ color: "hsl(45,55%,88%)" }}>
+            style={{ backgroundColor: "#2F4F3E", border: "1px solid #1F6A63" }}>
+            <p className="font-serif italic text-sm leading-relaxed" style={{ color: "#F4F1E9" }}>
               "The glory of this present house will be greater than the former."
             </p>
-            <p className="text-xs tracking-widest uppercase mt-1" style={{ color: "hsl(43,52%,72%)" }}>
+            <p className="text-xs tracking-widest uppercase mt-1" style={{ color: "#CDBE8A" }}>
               — Haggai 2:9
             </p>
           </div>
@@ -405,15 +405,15 @@ export default function LandingPage() {
 
       {/* ── How It Works ── */}
       <section id="how-it-works" className="py-24 px-5 relative overflow-hidden"
-        style={{ backgroundColor: "hsl(138,24%,40%)" }}>
+        style={{ backgroundColor: "#1F6A63" }}>
         <AnimatedGradientBg className="opacity-30" />
 
         <div className="relative max-w-5xl mx-auto space-y-14">
           <div className="text-center space-y-4">
-            <p className="text-xs uppercase tracking-widest font-medium" style={{ color: "hsl(43,52%,72%)" }}>
+            <p className="text-xs uppercase tracking-widest font-medium" style={{ color: "#CDBE8A" }}>
               Simple by design
             </p>
-            <h2 className="text-4xl md:text-5xl font-serif font-semibold" style={{ color: "hsl(45,55%,94%)" }}>
+            <h2 className="text-4xl md:text-5xl font-serif font-semibold" style={{ color: "#F4F1E9" }}>
               Your journey starts in three steps
             </h2>
           </div>
@@ -423,16 +423,16 @@ export default function LandingPage() {
               <div key={number} className="text-center space-y-4">
                 <div className="relative inline-flex">
                   <div className="w-20 h-20 rounded-2xl flex items-center justify-center"
-                    style={{ backgroundColor: "hsl(138,26%,28%)", border: "1px solid hsl(138,22%,44%)" }}>
-                    <Icon className="w-8 h-8" style={{ color: "hsl(43,52%,68%)" }} />
+                    style={{ backgroundColor: "#2F4F3E", border: "1px solid #1F6A63" }}>
+                    <Icon className="w-8 h-8" style={{ color: "#CDBE8A" }} />
                   </div>
                   <span className="absolute -top-2 -right-2 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold font-serif"
-                    style={{ backgroundColor: "hsl(43,52%,68%)", color: "hsl(152,40%,10%)" }}>
+                    style={{ backgroundColor: "#CDBE8A", color: "#2F4F3E" }}>
                     {number.slice(1)}
                   </span>
                 </div>
-                <h3 className="font-serif font-semibold text-xl" style={{ color: "hsl(45,55%,94%)" }}>{title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: "hsl(45,35%,78%)" }}>{desc}</p>
+                <h3 className="font-serif font-semibold text-xl" style={{ color: "#F4F1E9" }}>{title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: "#D9F2F2" }}>{desc}</p>
               </div>
             ))}
           </div>
@@ -443,7 +443,7 @@ export default function LandingPage() {
       <section className="py-24 px-5">
         <div className="max-w-5xl mx-auto">
           <div className="rounded-3xl overflow-hidden grid md:grid-cols-2 gap-0"
-            style={{ border: "1px solid hsl(138,22%,72%)", backgroundColor: "hsl(138,20%,96%)" }}>
+            style={{ border: "1px solid #C8C5BD", backgroundColor: "#FFFFFF" }}>
 
             <div className="p-10 md:p-14 space-y-8">
               <div className="space-y-3">
@@ -476,33 +476,33 @@ export default function LandingPage() {
             </div>
 
             <div className="relative hidden md:block p-10"
-              style={{ background: "linear-gradient(135deg, hsl(138,24%,40%) 0%, hsl(138,30%,28%) 100%)" }}>
+              style={{ background: "linear-gradient(135deg, #1F6A63 0%, #2F4F3E 100%)" }}>
               <AnimatedGradientBg className="opacity-40" />
               <div className="relative space-y-5">
                 {/* Mock planner card */}
                 <div className="rounded-2xl p-5 space-y-3 float-anim"
-                  style={{ backgroundColor: "hsl(138,26%,28%)", border: "1px solid hsl(138,22%,44%)" }}>
-                  <p className="text-[10px] uppercase tracking-widest font-medium" style={{ color: "hsl(43,52%,72%)" }}>
+                  style={{ backgroundColor: "#2F4F3E", border: "1px solid #1F6A63" }}>
+                  <p className="text-[10px] uppercase tracking-widest font-medium" style={{ color: "#CDBE8A" }}>
                     Today's Top 3
                   </p>
                   {["Complete weekly devotional", "Review financial goals", "Call my accountability partner"].map(item => (
                     <div key={item} className="flex items-center gap-2.5">
-                      <div className="w-4 h-4 rounded border-2 shrink-0" style={{ borderColor: "hsl(43,52%,68%)" }} />
-                      <span className="text-xs" style={{ color: "hsl(45,35%,82%)" }}>{item}</span>
+                      <div className="w-4 h-4 rounded border-2 shrink-0" style={{ borderColor: "#CDBE8A" }} />
+                      <span className="text-xs" style={{ color: "#F4F1E9" }}>{item}</span>
                     </div>
                   ))}
                 </div>
 
                 {/* Mock scripture card */}
                 <div className="rounded-2xl p-4 float-anim-2"
-                  style={{ backgroundColor: "hsl(138,20%,34%)", border: "1px solid hsl(138,18%,46%)" }}>
-                  <p className="text-[10px] uppercase tracking-widest font-medium mb-2" style={{ color: "hsl(43,52%,72%)" }}>
+                  style={{ backgroundColor: "#17534F", border: "1px solid #1F6A63" }}>
+                  <p className="text-[10px] uppercase tracking-widest font-medium mb-2" style={{ color: "#CDBE8A" }}>
                     Today's Scripture
                   </p>
-                  <p className="font-serif italic text-xs leading-relaxed" style={{ color: "hsl(45,35%,88%)" }}>
+                  <p className="font-serif italic text-xs leading-relaxed" style={{ color: "#F4F1E9" }}>
                     "I can do all things through Christ who strengthens me."
                   </p>
-                  <p className="text-[10px] mt-1.5 tracking-wider" style={{ color: "hsl(43,42%,60%)" }}>
+                  <p className="text-[10px] mt-1.5 tracking-wider" style={{ color: "#CDBE8A" }}>
                     Philippians 4:13
                   </p>
                 </div>
@@ -515,9 +515,9 @@ export default function LandingPage() {
                     { label: "Habits", value: "4/6" },
                   ].map(stat => (
                     <div key={stat.label} className="rounded-xl p-3 text-center"
-                      style={{ backgroundColor: "hsl(138,26%,28%)" }}>
-                      <p className="text-base font-serif font-semibold" style={{ color: "hsl(43,52%,68%)" }}>{stat.value}</p>
-                      <p className="text-[9px] uppercase tracking-wider mt-0.5" style={{ color: "hsl(45,25%,65%)" }}>{stat.label}</p>
+                      style={{ backgroundColor: "#2F4F3E" }}>
+                      <p className="text-base font-serif font-semibold" style={{ color: "#CDBE8A" }}>{stat.value}</p>
+                      <p className="text-[9px] uppercase tracking-wider mt-0.5" style={{ color: "#A8B8A2" }}>{stat.label}</p>
                     </div>
                   ))}
                 </div>
@@ -529,7 +529,7 @@ export default function LandingPage() {
 
       {/* ── Testimonials ── */}
       <section id="testimonials" className="py-24 px-5"
-        style={{ backgroundColor: "hsl(138,22%,93%)" }}>
+        style={{ backgroundColor: "#D9F2F2" }}>
         <div className="max-w-5xl mx-auto space-y-14">
           <div className="text-center space-y-4">
             <p className="text-xs uppercase tracking-widest font-medium text-primary">Real stories</p>
@@ -560,21 +560,21 @@ export default function LandingPage() {
 
       {/* ── Final CTA ── */}
       <section className="py-24 px-5 relative overflow-hidden"
-        style={{ background: "linear-gradient(135deg, hsl(138,30%,30%) 0%, hsl(138,36%,22%) 100%)" }}>
+        style={{ background: "linear-gradient(135deg, #1F6A63 0%, #2F4F3E 100%)" }}>
         <AnimatedGradientBg className="opacity-40" />
 
         <div className="relative max-w-3xl mx-auto text-center space-y-8">
           <div className="space-y-4">
-            <p className="text-xs uppercase tracking-widest font-medium" style={{ color: "hsl(43,52%,72%)" }}>
+            <p className="text-xs uppercase tracking-widest font-medium" style={{ color: "#CDBE8A" }}>
               Your best chapter is not behind you
             </p>
             <h2
               className="text-4xl md:text-5xl font-serif font-semibold leading-tight"
-              style={{ color: "hsl(45,55%,94%)" }}
+              style={{ color: "#F4F1E9" }}
             >
               The life you've dreamed about is still possible.
             </h2>
-            <p className="text-lg leading-relaxed font-serif italic" style={{ color: "hsl(45,35%,78%)" }}>
+            <p className="text-lg leading-relaxed font-serif italic" style={{ color: "#D9F2F2" }}>
               Start today. Free plan available. No credit card required.
               Your next chapter begins with a single step.
             </p>
@@ -585,7 +585,7 @@ export default function LandingPage() {
               size="lg"
               onClick={() => setLocation("/sign-up")}
               className="text-base px-10 py-6 rounded-xl shadow-xl gap-2 font-semibold"
-              style={{ backgroundColor: "hsl(43,52%,68%)", color: "hsl(152,40%,10%)" }}
+              style={{ backgroundColor: "#CDBE8A", color: "#2F4F3E" }}
             >
               Start Free Today <ArrowRight className="w-5 h-5" />
             </Button>
@@ -594,7 +594,7 @@ export default function LandingPage() {
               variant="ghost"
               onClick={() => setLocation("/sign-in")}
               className="text-base px-10 py-6 rounded-xl font-medium"
-              style={{ color: "hsl(45,35%,82%)", border: "1px solid hsl(138,22%,44%)" }}
+              style={{ color: "#F4F1E9", border: "1px solid #CDBE8A" }}
             >
               Sign In
             </Button>
@@ -617,7 +617,7 @@ export default function LandingPage() {
               <div>
                 <p
                   className="font-normal text-lg"
-                  style={{ fontFamily: "'Kapakana', cursive", color: "hsl(152,40%,22%)", wordSpacing: "-0.05em" }}
+                  style={{ fontFamily: "'Kapakana', cursive", color: "#1F6A63", wordSpacing: "-0.05em" }}
                 >
                   Latter House Life
                 </p>

@@ -11,21 +11,15 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-           // @replit: no hover, and add primary border
-           "bg-primary text-primary-foreground border border-primary-border",
+          "bg-primary text-primary-foreground border border-primary-border hover:bg-primary-hover active:bg-primary-active",
         destructive:
           "bg-destructive text-destructive-foreground shadow-sm border-destructive-border",
         outline:
-          // @replit Shows the background color of whatever card / sidebar / accent background it is inside of.
-          // Inherits the current text color. Uses shadow-xs. no shadow on active
-          // No hover state
-          " border [border-color:var(--button-outline)] shadow-xs active:shadow-none ",
+          "border border-primary text-primary hover:bg-muted active:bg-muted shadow-xs active:shadow-none",
         secondary:
-          // @replit border, no hover, no shadow, secondary border.
-          "border bg-secondary text-secondary-foreground border border-secondary-border ",
-        // @replit no hover, transparent border
-        ghost: "border border-transparent",
-        link: "text-primary underline-offset-4 hover:underline",
+          "border bg-secondary text-secondary-foreground border-secondary-border hover:bg-secondary-hover active:bg-secondary-hover",
+        ghost: "border border-transparent hover:bg-muted",
+        link: "text-link underline-offset-4 hover:underline hover:text-link-hover",
       },
       size: {
         // @replit changed sizes
