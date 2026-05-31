@@ -4,7 +4,7 @@ import {
   Pill, DollarSign, Target, CalendarCheck, Activity,
   CreditCard, Home, LogOut, Sun, HeartPulse, TrendingUp, Lock,
   CheckSquare, BookHeart, Flame, Moon, Search, LayoutDashboard, Settings,
-  Menu, X, ScrollText, HelpCircle, ShoppingBag, Wand2, ImageIcon, Droplets,
+  Menu, X, ScrollText, HelpCircle, ShoppingBag, Wand2, ImageIcon, Droplets, Lightbulb,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useClerk } from "@clerk/react";
@@ -28,6 +28,7 @@ const mainNavigation = [
   { name: "Brain Dump", short: "Brain", href: "/brain-dump", icon: Brain },
   { name: "Truth Generator", short: "Truth", href: "/truth-generator", icon: Sparkles },
   { name: "Side Hustle Hub", short: "Hustle", href: "/side-hustle", icon: ShoppingBag },
+  { name: "Idea Validator", short: "Validate", href: "/idea-validator", icon: Lightbulb },
   { name: "AI Assistant", short: "AI", href: "/ai-assistant", icon: Wand2 },
   { name: "Vision Board", short: "Vision", href: "/vision-board", icon: ImageIcon },
   { name: "Cycle Tracker", short: "Cycle", href: "/cycle-tracker", icon: Droplets },

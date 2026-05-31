@@ -9,6 +9,7 @@ import stripeRouter from "./stripe";
 import adminRouter from "./admin";
 import lifestyleRouter from "./lifestyle";
 import businessRouter from "./business";
+import ideasRouter from "./ideas";
 
 const router: IRouter = Router();
 
@@ -45,5 +46,6 @@ router.use(pathGate("/mood", lifestyleRouter));
 router.use(pathGate("/notes", lifestyleRouter));
 router.use(pathGate("/vision-board", lifestyleRouter));
 router.use(pathGate("/business", businessRouter));
+router.use(pathGate("/ideas", ideasRouter));
 
 export default router;

@@ -25,3 +25,4 @@ export * from "./trackers";
 export * from "./wellness";
 export * from "./lifestyle";
 export * from "./business";
+export * from "./ideas";

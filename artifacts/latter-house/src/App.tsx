@@ -39,6 +39,7 @@ import AccountSettingsPage from "@/pages/account-settings";
 import OnboardingPage from "@/pages/onboarding";
 import SideHustlePage from "@/pages/side-hustle/index";
 import AIAssistantPage from "@/pages/ai-assistant";
+import IdeaValidatorPage from "@/pages/idea-validator/index";
 import VisionBoardPage from "@/pages/vision-board";
 import MenstrualTrackerPage from "@/pages/menstrual-tracker";
 import { RemindersProvider } from "@/contexts/RemindersContext";
@@ -294,6 +295,7 @@ function Router() {
         <Route path="/trackers/financial" component={FinancialTracker} />
         <Route path="/trackers/goals" component={GoalsTracker} />
         <Route path="/side-hustle" component={SideHustlePage} />
+        <Route path="/idea-validator" component={IdeaValidatorPage} />
         <Route path="/ai-assistant" component={AIAssistantPage} />
         <Route path="/vision-board" component={VisionBoardPage} />
         <Route path="/cycle-tracker" component={MenstrualTrackerPage} />
