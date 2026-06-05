@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { chatWithFallback } from "@workspace/integrations-openai-ai-server";
 import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import {
@@ -28,7 +28,7 @@ router.post("/ai/brain-dump-help", requireAuth, aiRateLimit("regular-ai", 20), a
       return;
     }
 
-    const response = await openai.chat.completions.create({
+    const response = await chatWithFallback({
       model: "gpt-4o-mini",
       max_completion_tokens: 1500,
       messages: [
@@ -81,7 +81,7 @@ router.post("/ai/scripture", requireAuth, aiRateLimit("regular-ai", 20), async (
       ? `The user is thinking about: ${body.data.context}. Select a scripture relevant to this context.`
       : "Select a scripture that would encourage and ground a woman who is rebuilding her life with purpose, faith, and intentionality.";
 
-    const response = await openai.chat.completions.create({
+    const response = await chatWithFallback({
       model: "gpt-4o-mini",
       max_completion_tokens: 500,
       messages: [
@@ -130,7 +130,7 @@ router.post("/ai/encouragement", requireAuth, aiRateLimit("regular-ai", 20), asy
       ? `The user is working on her ${body.data.view ?? "day"} plan and shared this context: ${body.data.context}`
       : `The user is working on her ${body.data.view ?? "day"} planning.`;
 
-    const response = await openai.chat.completions.create({
+    const response = await chatWithFallback({
       model: "gpt-4o-mini",
       max_completion_tokens: 300,
       messages: [
@@ -179,7 +179,7 @@ router.post("/ai/truth-generator", requireAuth, aiRateLimit("regular-ai", 20), a
       return;
     }
 
-    const response = await openai.chat.completions.create({
+    const response = await chatWithFallback({
       model: "gpt-4o-mini",
       max_completion_tokens: 700,
       messages: [
@@ -234,7 +234,7 @@ router.post("/ai/planner-help", requireAuth, aiRateLimit("regular-ai", 20), asyn
       ? `\n\nHere is what she has planned so far:\n${body.data.currentEntries}`
       : "";
 
-    const response = await openai.chat.completions.create({
+    const response = await chatWithFallback({
       model: "gpt-4o-mini",
       max_completion_tokens: 900,
       messages: [
@@ -288,7 +288,7 @@ router.post("/ai/get-back-on-track", requireAuth, aiRateLimit("regular-ai", 20),
       ? `She has been away for about ${body.data.daysAway} day${body.data.daysAway === 1 ? "" : "s"}.`
       : "She has been away for a little while.";
 
-    const response = await openai.chat.completions.create({
+    const response = await chatWithFallback({
       model: "gpt-4o-mini",
       max_completion_tokens: 800,
       messages: [
@@ -337,7 +337,7 @@ router.post("/ai/task-breakdown", requireAuth, aiRateLimit("regular-ai", 20), as
     const body = TaskBreakdownBody.safeParse(req.body);
     if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
 
-    const response = await openai.chat.completions.create({
+    const response = await chatWithFallback({
       model: "gpt-4o-mini",
       max_completion_tokens: 1200,
       messages: [
@@ -399,7 +399,7 @@ router.post("/ai/weekly-plan", requireAuth, requireTier("premium"), aiRateLimit(
     const goalsCtx = body.data.goals ? `Her current goals: ${body.data.goals}` : "";
     const tasksCtx = body.data.recentTasks ? `Recent tasks she's been working on: ${body.data.recentTasks}` : "";
 
-    const response = await openai.chat.completions.create({
+    const response = await chatWithFallback({
       model: "gpt-5.4",
       max_completion_tokens: 8192,
       messages: [
@@ -450,7 +450,7 @@ router.post("/ai/health-summary", requireAuth, requireTier("premium"), aiRateLim
     const condCtx = body.data.conditions ? `Health conditions: ${body.data.conditions}` : "No health conditions recorded.";
     const medCtx = body.data.medications ? `Current medications: ${body.data.medications}` : "No medications recorded.";
 
-    const response = await openai.chat.completions.create({
+    const response = await chatWithFallback({
       model: "gpt-5.4",
       max_completion_tokens: 8192,
       messages: [
@@ -500,7 +500,7 @@ router.post("/ai/financial-coaching", requireAuth, requireTier("premium"), aiRat
 
     const entriesCtx = body.data.entries ? `Financial entries for ${body.data.month ?? "this month"}: ${body.data.entries}` : "No financial entries recorded yet.";
 
-    const response = await openai.chat.completions.create({
+    const response = await chatWithFallback({
       model: "gpt-5.4",
       max_completion_tokens: 8192,
       messages: [
@@ -556,7 +556,7 @@ router.post("/ai/devotional", requireAuth, requireTier("premium"), aiRateLimit("
 
     const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 
-    const response = await openai.chat.completions.create({
+    const response = await chatWithFallback({
       model: "gpt-5.4",
       max_completion_tokens: 8192,
       messages: [
