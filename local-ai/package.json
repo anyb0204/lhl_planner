@@ -1,0 +1,17 @@
+{
+  "name": "local-ai",
+  "version": "1.0.0",
+  "description": "Fully offline AI assistant — runs on your machine, accessible from any device on your network",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "setup": "bash setup.sh"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
