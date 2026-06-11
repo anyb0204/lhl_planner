@@ -9,6 +9,9 @@ import stripeRouter from "./stripe";
 import adminRouter from "./admin";
 import lifestyleRouter from "./lifestyle";
 import businessRouter from "./business";
+import calendarRouter from "./calendar";
+import cronRouter from "./cron";
+import memoriesRouter from "./memories";
 
 const router: IRouter = Router();
 
@@ -45,5 +48,10 @@ router.use(pathGate("/mood", lifestyleRouter));
 router.use(pathGate("/notes", lifestyleRouter));
 router.use(pathGate("/vision-board", lifestyleRouter));
 router.use(pathGate("/business", businessRouter));
+router.use(pathGate("/calendar", calendarRouter));
+router.use(pathGate("/cron", cronRouter));
+router.use(pathGate("/notification-prefs", cronRouter));
+router.use(pathGate("/push-subscription", cronRouter));
+router.use(pathGate("/memories", memoriesRouter));
 
 export default router;

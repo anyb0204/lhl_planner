@@ -2,52 +2,12 @@ import Stripe from 'stripe';
 import { StripeSync } from 'stripe-replit-sync';
 
 async function getStripeCredentials(): Promise<{ secretKey: string; publishableKey: string; webhookSecret?: string }> {
-  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
-  const xReplitToken = process.env.REPL_IDENTITY
-    ? "repl " + process.env.REPL_IDENTITY
-    : process.env.WEB_REPL_RENEWAL
-      ? "depl " + process.env.WEB_REPL_RENEWAL
-      : null;
-
-  if (!hostname || !xReplitToken) {
-    throw new Error('Missing Replit environment variables. Ensure the Stripe integration is connected.');
-  }
-
-  const isProduction = process.env.REPLIT_DEPLOYMENT === '1';
-
-  async function fetchForEnvironment(env: string) {
-    const url = new URL(`https://${hostname}/api/v2/connection`);
-    url.searchParams.set('include_secrets', 'true');
-    url.searchParams.set('connector_names', 'stripe');
-    url.searchParams.set('environment', env);
-
-    const resp = await fetch(url.toString(), {
-      headers: {
-        Accept: "application/json",
-        'X-Replit-Token': xReplitToken!,
-      },
-      signal: AbortSignal.timeout(10_000),
-    });
-
-    if (!resp.ok) return null;
-    const data = await resp.json() as { items?: Array<{ settings?: { secret?: string; publishable?: string; webhook_secret?: string } }> };
-    return data.items?.[0]?.settings ?? null;
-  }
-
-  let settings = isProduction ? await fetchForEnvironment('production') : null;
-
-  if (!settings?.secret) {
-    settings = await fetchForEnvironment('development');
-  }
-
-  if (!settings?.secret) {
-    throw new Error('Stripe integration not connected or missing secret key. Connect Stripe via the Integrations tab first.');
-  }
-
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+  if (!secretKey) throw new Error('STRIPE_SECRET_KEY is not set');
   return {
-    secretKey: settings.secret,
-    publishableKey: settings.publishable ?? '',
-    webhookSecret: settings.webhook_secret,
+    secretKey,
+    publishableKey: process.env.STRIPE_PUBLISHABLE_KEY ?? '',
+    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
   };
 }
 

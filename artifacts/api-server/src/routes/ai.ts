@@ -13,6 +13,7 @@ import { requireAuth } from "../middlewares/requireAuth";
 import { requireTier } from "../middlewares/requireTier";
 import { aiRateLimit } from "../lib/aiRateLimit";
 import { z } from "zod/v4";
+import { getUserMemoryContext } from "./memories";
 
 const router = Router();
 
@@ -77,29 +78,29 @@ router.post("/ai/scripture", requireAuth, aiRateLimit("regular-ai", 20), async (
       return;
     }
 
+    const userId = req.user!.id;
+    const memoryContext = await getUserMemoryContext(userId);
+
     const contextClause = body.data.context
       ? `The user is thinking about: ${body.data.context}. Select a scripture relevant to this context.`
       : "Select a scripture that would encourage and ground a woman who is rebuilding her life with purpose, faith, and intentionality.";
+
+    const systemParts = [`You are a Bible scholar and spiritual guide for Latter House Life. You provide scriptures that speak directly to mature women who have walked through exile — whether through life circumstances or their own choices — and are now building something new for God's glory. ${contextClause}`];
+    if (memoryContext) systemParts.push(memoryContext);
+    systemParts.push(`Return a JSON object with:
+- "reference": the scripture reference (e.g., "Haggai 2:9")
+- "text": the full scripture text (NIV or ESV preferred)
+- "reflection": a 2-3 sentence reflection connecting this scripture to the journey of the woman reading it — specific, warm, and encouraging
+- "theme": a 2-4 word theme label for this scripture (e.g., "restoration and hope")
+
+IMPORTANT: Every call should return a DIFFERENT scripture. Do not repeat common ones. Dig into the full canon — Old Testament, Psalms, Proverbs, Prophets, Epistles, Gospels.`);
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       max_completion_tokens: 500,
       messages: [
-        {
-          role: "system",
-          content: `You are a Bible scholar and spiritual guide for Latter House Life. You provide scriptures that speak directly to mature women who have walked through exile — whether through life circumstances or their own choices — and are now building something new for God's glory. ${contextClause}
-
-Return a JSON object with:
-- "reference": the scripture reference (e.g., "Haggai 2:9")
-- "text": the full scripture text (NIV or ESV preferred)
-- "reflection": a 2-3 sentence reflection connecting this scripture to the journey of the woman reading it — specific, warm, and encouraging
-
-IMPORTANT: Every call should return a DIFFERENT scripture. Do not repeat common ones. Dig into the full canon — Old Testament, Psalms, Proverbs, Prophets, Epistles, Gospels.`,
-        },
-        {
-          role: "user",
-          content: "Give me a fresh scripture for today.",
-        },
+        { role: "system", content: systemParts.join("\n\n") },
+        { role: "user", content: "Give me a fresh scripture for today." },
       ],
       response_format: { type: "json_object" },
     });
@@ -107,8 +108,16 @@ IMPORTANT: Every call should return a DIFFERENT scripture. Do not repeat common 
     const content = response.choices[0]?.message?.content ?? "{}";
     const parsed = JSON.parse(content);
 
+    const reference = parsed.reference ?? "Haggai 2:9";
+    const theme = parsed.theme ?? null;
+
+    db.execute(
+      sql`INSERT INTO public.sent_encouragements (user_id, scripture_reference, theme, sent_at)
+          VALUES (${userId}, ${reference}, ${theme}, NOW())`
+    ).catch(() => {});
+
     res.json({
-      reference: parsed.reference ?? "Haggai 2:9",
+      reference,
       text: parsed.text ?? "The glory of this present house will be greater than the glory of the former house.",
       reflection: parsed.reflection ?? "What you are building now is not lesser — it is greater.",
     });
@@ -126,21 +135,16 @@ router.post("/ai/encouragement", requireAuth, aiRateLimit("regular-ai", 20), asy
       return;
     }
 
+    const userId = req.user!.id;
+    const memoryContext = await getUserMemoryContext(userId);
+
     const contextClause = body.data.context
       ? `The user is working on her ${body.data.view ?? "day"} plan and shared this context: ${body.data.context}`
       : `The user is working on her ${body.data.view ?? "day"} planning.`;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      max_completion_tokens: 300,
-      messages: [
-        {
-          role: "system",
-          content: `You are a warm, wise encourager for Latter House Life — a faith-based planner for mature women stepping into their latter-house season. These are women who have walked through exile, raised children, survived hard seasons, and are now ready to build something purposeful for God.
-
-${contextClause}
-
-Write an encouraging message that:
+    const systemParts = [`You are a warm, wise encourager for Latter House Life — a faith-based planner for mature women stepping into their latter-house season. These are women who have walked through exile, raised children, survived hard seasons, and are now ready to build something purposeful for God.\n\n${contextClause}`];
+    if (memoryContext) systemParts.push(memoryContext);
+    systemParts.push(`Write an encouraging message that:
 - Speaks directly to her season (she is NOT starting over, she is building something GREATER)
 - Is grounded in scripture or faith without being preachy
 - Feels like it was written specifically for her, not a generic affirmation
@@ -148,18 +152,28 @@ Write an encouraging message that:
 
 Return a JSON object with:
 - "message": the encouragement text
-- "scriptureReference": optional scripture reference that supports the message (can be null)`,
-        },
-        {
-          role: "user",
-          content: "Give me some encouragement for today.",
-        },
+- "scriptureReference": optional scripture reference that supports the message (can be null)
+- "theme": a 2-4 word theme label for this encouragement`);
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      max_completion_tokens: 300,
+      messages: [
+        { role: "system", content: systemParts.join("\n\n") },
+        { role: "user", content: "Give me some encouragement for today." },
       ],
       response_format: { type: "json_object" },
     });
 
     const content = response.choices[0]?.message?.content ?? "{}";
     const parsed = JSON.parse(content);
+
+    if (parsed.scriptureReference || parsed.theme) {
+      db.execute(
+        sql`INSERT INTO public.sent_encouragements (user_id, scripture_reference, theme, sent_at)
+            VALUES (${req.user!.id}, ${parsed.scriptureReference ?? null}, ${parsed.theme ?? null}, NOW())`
+      ).catch(() => {});
+    }
 
     res.json({
       message: parsed.message ?? "You are not behind. You are exactly where God needs you to be, building something that will outlast this season.",

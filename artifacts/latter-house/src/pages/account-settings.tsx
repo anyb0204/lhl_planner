@@ -1,8 +1,10 @@
 import { useUser, useClerk } from "@clerk/react";
-import { useState } from "react";
-import { User, Mail, CreditCard, Moon, Sun, Bell, Shield, ChevronRight, Check, LogOut, Sparkles } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { User, Mail, CreditCard, Moon, Sun, Bell, Shield, ChevronRight, Check, LogOut, Sparkles, Calendar, Copy, RefreshCw, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useTier } from "@/contexts/TierContext";
@@ -27,6 +29,88 @@ export default function AccountSettingsPage() {
   const [lastName, setLastName] = useState(user?.lastName ?? "");
   const [saving, setSaving] = useState(false);
   const [billingLoading, setBillingLoading] = useState(false);
+
+  // Calendar feed state
+  const [icsUrl, setIcsUrl] = useState<string | null>(null);
+  const [calendarLoading, setCalendarLoading] = useState(false);
+
+  const loadCalendarToken = useCallback(async () => {
+    try {
+      const res = await fetch("/api/calendar/token");
+      if (!res.ok) return;
+      const data = await res.json() as { icsUrl: string };
+      setIcsUrl(data.icsUrl);
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => { loadCalendarToken(); }, [loadCalendarToken]);
+
+  const handleResetCalendarToken = async () => {
+    setCalendarLoading(true);
+    try {
+      const res = await fetch("/api/calendar/feed/reset", { method: "POST" });
+      if (!res.ok) throw new Error();
+      const data = await res.json() as { icsUrl: string };
+      setIcsUrl(data.icsUrl);
+      toast({ title: "Calendar link reset" });
+    } catch {
+      toast({ title: "Could not reset link", variant: "destructive" });
+    } finally {
+      setCalendarLoading(false);
+    }
+  };
+
+  const copyIcsUrl = async () => {
+    if (!icsUrl) return;
+    try {
+      await navigator.clipboard.writeText(icsUrl);
+      toast({ title: "Link copied!" });
+    } catch { /* ignore */ }
+  };
+
+  // Notification prefs state
+  const [notifPrefs, setNotifPrefs] = useState({
+    browserPush: false,
+    emailMorningSummary: false,
+    appointmentLeadMinutes: "60",
+    refillAlertDays: "5",
+    quietStart: "21:00",
+    quietEnd: "07:00",
+  });
+  const [notifSaving, setNotifSaving] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/notification-prefs")
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setNotifPrefs(data as typeof notifPrefs); })
+      .catch(() => {});
+  }, []);
+
+  const saveNotifPrefs = async (updates: Partial<typeof notifPrefs>) => {
+    const next = { ...notifPrefs, ...updates };
+    setNotifPrefs(next);
+    setNotifSaving(true);
+    try {
+      await fetch("/api/notification-prefs", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(next),
+      });
+    } finally {
+      setNotifSaving(false);
+    }
+  };
+
+  const handleBrowserPushToggle = async (checked: boolean) => {
+    if (checked && "Notification" in window) {
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        toast({ title: "Notifications blocked", description: "Please allow notifications in your browser settings.", variant: "destructive" });
+        return;
+      }
+    }
+    await saveNotifPrefs({ browserPush: checked });
+  };
 
   if (!isLoaded) {
     return (
@@ -202,6 +286,165 @@ export default function AccountSettingsPage() {
           </div>
           <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
         </div>
+      </section>
+
+      {/* Calendar Sync */}
+      <section className="journal-page p-6 space-y-5">
+        <div className="flex items-center gap-3">
+          <Calendar className="w-4 h-4 text-primary" />
+          <h2 className="font-serif text-lg font-medium">Connected Calendars</h2>
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <p className="text-[14px] font-semibold text-foreground">Your planner feed</p>
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "hsl(43,52%,90%)", color: "hsl(43,60%,28%)" }}>
+              Works with all calendars
+            </span>
+          </div>
+          <p className="text-[12.5px] text-muted-foreground leading-snug">
+            Subscribe to your appointments and medication reminders from any calendar app. Your private link gives read-only access — reset it anytime.
+          </p>
+
+          <div className="flex gap-2">
+            <Input
+              readOnly
+              value={icsUrl ?? "Loading…"}
+              className="font-mono text-xs opacity-80 truncate bg-muted/40"
+              onClick={copyIcsUrl}
+              title="Click to copy"
+            />
+            <Button variant="outline" size="sm" onClick={copyIcsUrl} className="shrink-0 gap-1.5">
+              <Copy className="w-3.5 h-3.5" /> Copy
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleResetCalendarToken} disabled={calendarLoading} className="shrink-0 gap-1.5">
+              <RefreshCw className={cn("w-3.5 h-3.5", calendarLoading && "animate-spin")} /> Reset
+            </Button>
+          </div>
+
+          {icsUrl && (
+            <div className="flex flex-wrap gap-2">
+              {[
+                {
+                  label: "Add to Google",
+                  href: `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(icsUrl.replace(/^https?:/, "webcal:"))}`,
+                },
+                {
+                  label: "Add to Apple",
+                  href: icsUrl.replace(/^https?:/, "webcal:"),
+                },
+                {
+                  label: "Add to Outlook",
+                  href: `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(icsUrl)}`,
+                },
+              ].map(btn => (
+                <Button key={btn.label} variant="outline" size="sm" asChild className="gap-1.5 text-xs">
+                  <a href={btn.href} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="w-3 h-3" /> {btn.label}
+                  </a>
+                </Button>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Notifications */}
+      <section className="journal-page p-6 space-y-5" style={{ maxWidth: 410 }}>
+        <div className="flex items-center gap-3">
+          <Bell className="w-4 h-4 text-primary" />
+          <h2 className="font-serif text-lg font-medium">Reminders & Notifications</h2>
+        </div>
+
+        {[
+          {
+            label: "Browser & phone notifications",
+            control: (
+              <Switch
+                checked={notifPrefs.browserPush}
+                onCheckedChange={handleBrowserPushToggle}
+                disabled={notifSaving}
+              />
+            ),
+          },
+          {
+            label: "Email me a morning summary (7:00 AM)",
+            control: (
+              <Switch
+                checked={notifPrefs.emailMorningSummary}
+                onCheckedChange={(v) => saveNotifPrefs({ emailMorningSummary: v })}
+                disabled={notifSaving}
+              />
+            ),
+          },
+          {
+            label: "Remind me before appointments",
+            control: (
+              <Select
+                value={notifPrefs.appointmentLeadMinutes}
+                onValueChange={(v) => saveNotifPrefs({ appointmentLeadMinutes: v })}
+              >
+                <SelectTrigger className="w-28 h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="15">15 min</SelectItem>
+                  <SelectItem value="60">1 hour</SelectItem>
+                  <SelectItem value="1440">1 day</SelectItem>
+                </SelectContent>
+              </Select>
+            ),
+          },
+          {
+            label: "Medication refill alerts",
+            control: (
+              <Select
+                value={notifPrefs.refillAlertDays}
+                onValueChange={(v) => saveNotifPrefs({ refillAlertDays: v })}
+              >
+                <SelectTrigger className="w-28 h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="3">3 days</SelectItem>
+                  <SelectItem value="5">5 days</SelectItem>
+                  <SelectItem value="7">7 days</SelectItem>
+                </SelectContent>
+              </Select>
+            ),
+          },
+          {
+            label: "Quiet hours",
+            control: (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <input
+                  type="time"
+                  value={notifPrefs.quietStart}
+                  onChange={(e) => saveNotifPrefs({ quietStart: e.target.value })}
+                  className="bg-muted/40 border border-border rounded px-1.5 py-0.5 text-xs text-foreground"
+                />
+                <span>–</span>
+                <input
+                  type="time"
+                  value={notifPrefs.quietEnd}
+                  onChange={(e) => saveNotifPrefs({ quietEnd: e.target.value })}
+                  className="bg-muted/40 border border-border rounded px-1.5 py-0.5 text-xs text-foreground"
+                />
+              </div>
+            ),
+          },
+        ].map(({ label, control }, i, arr) => (
+          <div
+            key={label}
+            className={cn(
+              "flex items-center justify-between py-2",
+              i < arr.length - 1 && "border-b border-border/40"
+            )}
+          >
+            <p className="text-[13px] text-foreground">{label}</p>
+            {control}
+          </div>
+        ))}
       </section>
 
       {/* Danger zone */}
