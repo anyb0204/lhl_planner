@@ -35,7 +35,18 @@ function getRequiredBasePath(): string {
   return basePath;
 }
 
-export default defineConfig(async ({ command }) => {
+const replitPlugins =
+  process.env.NODE_ENV !== "production" && process.env.REPL_ID !== undefined
+    ? [
+        await import("@replit/vite-plugin-cartographer").then((m) =>
+          m.cartographer({
+            root: path.resolve(import.meta.dirname, ".."),
+          }),
+        ),
+      ]
+    : [];
+
+export default defineConfig(({ command }) => {
   const isBuild = command === "build";
   const port = isBuild ? 5173 : getRequiredPort();
   const basePath = isBuild
@@ -49,16 +60,7 @@ export default defineConfig(async ({ command }) => {
       react(),
       tailwindcss(),
       runtimeErrorOverlay(),
-      ...(process.env.NODE_ENV !== "production" &&
-      process.env.REPL_ID !== undefined
-        ? [
-            await import("@replit/vite-plugin-cartographer").then((m) =>
-              m.cartographer({
-                root: path.resolve(import.meta.dirname, ".."),
-              }),
-            ),
-          ]
-        : []),
+      ...replitPlugins,
     ],
     resolve: {
       alias: {
