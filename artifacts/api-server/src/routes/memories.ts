@@ -7,6 +7,14 @@ import { z } from "zod/v4";
 
 const router = Router();
 
+function parseMemoryId(idParam: string | string[] | undefined): number | null {
+  if (typeof idParam !== "string" || !/^\d+$/.test(idParam)) {
+    return null;
+  }
+
+  return Number(idParam);
+}
+
 router.get("/memories", requireAuth, async (req, res) => {
   try {
     const userId = req.user!.id;
@@ -24,7 +32,12 @@ router.get("/memories", requireAuth, async (req, res) => {
 router.delete("/memories/:id", requireAuth, async (req, res) => {
   try {
     const userId = req.user!.id;
-    const id = parseInt(req.params.id, 10);
+    const id = parseMemoryId(req.params.id);
+    if (id === null) {
+      res.status(400).json({ error: "Invalid memory id" });
+      return;
+    }
+
     await db.execute(
       sql`DELETE FROM public.user_memories WHERE id = ${id} AND user_id = ${userId}`
     );
@@ -38,7 +51,12 @@ router.delete("/memories/:id", requireAuth, async (req, res) => {
 router.patch("/memories/:id", requireAuth, async (req, res) => {
   try {
     const userId = req.user!.id;
-    const id = parseInt(req.params.id, 10);
+    const id = parseMemoryId(req.params.id);
+    if (id === null) {
+      res.status(400).json({ error: "Invalid memory id" });
+      return;
+    }
+
     const { content } = z.object({ content: z.string().min(1).max(500) }).parse(req.body);
     await db.execute(
       sql`UPDATE public.user_memories SET content = ${content}, updated_at = NOW()
