@@ -37,7 +37,7 @@ export function NotificationCenter({ compact = false }: { compact?: boolean }) {
           <span className="relative">
             <Bell className={compact ? "h-4 w-4" : "h-[18px] w-[18px] text-sidebar-foreground/60"} />
             {count > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5 leading-none">
+              <span className="absolute -top-1.5 -right-1.5 text-[9px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-0.5 leading-none" style={{ background: "hsl(43,52%,68%)", color: "hsl(152,40%,10%)" }}>
                 {count > 9 ? "9+" : count}
               </span>
             )}
@@ -58,17 +58,17 @@ export function NotificationCenter({ compact = false }: { compact?: boolean }) {
       >
         <div className="p-4 border-b border-border/50 flex items-start justify-between gap-2">
           <div>
-            <h3 className="font-serif text-base font-medium text-foreground">
+            <h3 className="text-[13.5px] font-semibold text-foreground">
               Notifications {count > 0 && <span className="text-primary">({count})</span>}
             </h3>
-            <p className="text-xs text-muted-foreground mt-0.5">Reminders for upcoming items</p>
           </div>
           {count > 0 && (
             <button
               onClick={dismissAll}
-              className="text-[11px] text-muted-foreground hover:text-foreground transition-colors shrink-0 mt-0.5 underline underline-offset-2"
+              className="text-[11.5px] transition-colors shrink-0 mt-0.5 underline underline-offset-2"
+              style={{ color: "hsl(43,52%,50%)" }}
             >
-              Dismiss all
+              Mark all read
             </button>
           )}
         </div>
