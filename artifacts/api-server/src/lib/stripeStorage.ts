@@ -1,4 +1,4 @@
-import { db, usersTable } from '@workspace/db';
+import { db, usersTable, scholarshipRequestsTable } from '@workspace/db';
 import { eq, sql } from 'drizzle-orm';
 
 export class StripeStorage {
@@ -121,6 +121,33 @@ export class StripeStorage {
     if (!user.lifetimeAccess) return { found: true, updated: false };
     await db.update(usersTable).set({ lifetimeAccess: false }).where(eq(usersTable.id, user.id));
     return { found: true, updated: true };
+  }
+
+  async updateScholarshipStatus(userId: string, status: string) {
+    const [user] = await db
+      .update(usersTable)
+      .set({ scholarshipStatus: status })
+      .where(eq(usersTable.id, userId))
+      .returning();
+    return user;
+  }
+
+  async getScholarshipRequest(userId: string) {
+    const [req] = await db
+      .select()
+      .from(scholarshipRequestsTable)
+      .where(eq(scholarshipRequestsTable.userId, userId));
+    return req ?? null;
+  }
+
+  async createScholarshipRequest(userId: string, story?: string) {
+    const existing = await this.getScholarshipRequest(userId);
+    if (existing) return existing;
+    const [req] = await db
+      .insert(scholarshipRequestsTable)
+      .values({ userId, story: story ?? null })
+      .returning();
+    return req;
   }
 }
 

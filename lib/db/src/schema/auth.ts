@@ -22,9 +22,22 @@ export const usersTable = pgTable("users", {
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
   lifetimeAccess: boolean("lifetime_access").notNull().default(false),
+  scholarshipStatus: varchar("scholarship_status"), // null | 'pending' | 'approved' | 'waitlisted'
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
 
 export type UpsertUser = typeof usersTable.$inferInsert;
 export type User = typeof usersTable.$inferSelect;
+
+// Scholarship application submitted by users who cannot pay
+export const scholarshipRequestsTable = pgTable("scholarship_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
+  story: varchar("story", { length: 2000 }),
+  status: varchar("status").notNull().default("pending"), // 'pending' | 'approved' | 'waitlisted'
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+});
+
+export type ScholarshipRequest = typeof scholarshipRequestsTable.$inferSelect;

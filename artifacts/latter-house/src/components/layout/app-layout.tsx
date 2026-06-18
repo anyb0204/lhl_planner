@@ -99,7 +99,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { signOut } = useClerk();
   const tier = useTier();
-  const isPremium = tier === "premium";
+  const isPremium = tier !== "free";
   const isFree = tier === "free";
   const { theme, toggleTheme } = useTheme();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -251,9 +251,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   </motion.div>
                 );
               })}
-              {!isPremium && (
+              {isFree && (
                 <Link href="/pricing" className="flex items-center gap-2 px-4 py-2 text-xs text-primary/80 hover:text-primary transition-colors">
-                  <Sparkles className="w-3 h-3" /> Upgrade to Premium
+                  <Sparkles className="w-3 h-3" /> Support to unlock
                 </Link>
               )}
             </motion.div>
@@ -268,7 +268,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <Link href="/pricing"
             className="w-full flex items-center gap-3 px-4 py-2.5 rounded-md text-sm text-primary hover:bg-sidebar-accent transition-all duration-300 font-semibold">
             <Sparkles className="h-[18px] w-[18px] shrink-0" />
-            Upgrade Plan
+            Support This App
           </Link>
         )}
         {!isFree && (
