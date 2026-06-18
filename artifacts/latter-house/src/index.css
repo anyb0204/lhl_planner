@@ -195,3 +195,119 @@ input::placeholder,
 textarea::placeholder {
   opacity: 0.32;
 }
+
+/* ── Cinematic ambient background ─────────────────────────────────────────── */
+.main-ambient-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.main-ambient-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 80%, hsl(138 22% 80% / 0.10) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 80% 15%, hsl(43 52% 78% / 0.07) 0%, transparent 65%);
+  animation: ambient-drift 22s ease-in-out infinite alternate;
+}
+
+.main-ambient-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 40% 40% at 60% 90%, hsl(138 18% 72% / 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 35% 45% at 15% 25%, hsl(43 40% 72% / 0.06) 0%, transparent 55%);
+  animation: ambient-drift 28s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes ambient-drift {
+  0%   { transform: translate(0%, 0%) scale(1); }
+  33%  { transform: translate(2%, -1.5%) scale(1.03); }
+  66%  { transform: translate(-1.5%, 1%) scale(0.98); }
+  100% { transform: translate(1%, 2%) scale(1.02); }
+}
+
+/* ── Floating leaf particles ──────────────────────────────────────────────── */
+.leaf-particle {
+  position: fixed;
+  bottom: -40px;
+  pointer-events: none;
+  user-select: none;
+  animation: leaf-float linear infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes leaf-float {
+  0%   { transform: translateY(0) rotate(0deg) translateX(0px);   opacity: 0; }
+  8%   { opacity: 1; }
+  85%  { opacity: 0.45; }
+  100% { transform: translateY(-105vh) rotate(280deg) translateX(40px); opacity: 0; }
+}
+
+/* ── Shimmer sweep on interactive elements ────────────────────────────────── */
+@keyframes shimmer-sweep {
+  0%   { background-position: -250% center; }
+  100% { background-position: 250% center; }
+}
+
+.shimmer-on-hover {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-on-hover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    hsl(43 52% 90% / 0.28) 50%,
+    transparent 65%
+  );
+  background-size: 250% 100%;
+  opacity: 0;
+  transition: opacity 0.2s;
+  animation: shimmer-sweep 1.6s ease infinite;
+}
+.shimmer-on-hover:hover::after {
+  opacity: 1;
+}
+
+/* ── Gold glow pulse for premium/featured elements ────────────────────────── */
+@keyframes gold-pulse {
+  0%,  100% { box-shadow: 0 0 0   0   hsl(43 52% 68% / 0.25); }
+  50%        { box-shadow: 0 0 22px 4px hsl(43 52% 68% / 0.18); }
+}
+
+.premium-glow {
+  animation: gold-pulse 3.5s ease-in-out infinite;
+}
+
+/* ── Streak counter pop ───────────────────────────────────────────────────── */
+@keyframes streak-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.35); }
+  70%  { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+.streak-pop {
+  animation: streak-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Habit day cell completion flash ──────────────────────────────────────── */
+@keyframes cell-complete {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.22); }
+  75%  { transform: scale(0.94); }
+  100% { transform: scale(1); }
+}
+
+.cell-complete {
+  animation: cell-complete 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
