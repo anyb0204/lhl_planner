@@ -319,16 +319,9 @@ function FreePlannerRouter() {
 
 function AppRouter() {
   const { isSignedIn, isLoaded } = useUser();
-  const [timedOut, setTimedOut] = useState(false);
   const tierStatus = useSubscriptionTier(isSignedIn);
   const [location, setLocation] = useLocation();
   const justSubscribed = location.includes("subscribed=true");
-
-  useEffect(() => {
-    if (isLoaded) return;
-    const t = setTimeout(() => setTimedOut(true), 4000);
-    return () => clearTimeout(t);
-  }, [isLoaded]);
 
   // After Stripe checkout success, poll until subscription is confirmed then reload
   useEffect(() => {
@@ -347,7 +340,11 @@ function AppRouter() {
     return () => timers.forEach(clearTimeout);
   }, [justSubscribed, isSignedIn, setLocation]);
 
-  if (!isLoaded && !timedOut) return <Spinner />;
+  // Always wait for Clerk to fully load before deciding what to render.
+  // Never show the landing page while isSignedIn is still undefined — that
+  // would cause the marketing page to flash for authenticated users on slow
+  // connections.
+  if (!isLoaded) return <Spinner />;
   // Show landing page for non-authenticated visitors (auth routes handled by parent Switch)
   if (!isSignedIn) return <LandingPage />;
   if (tierStatus === "loading") return <Spinner />;
