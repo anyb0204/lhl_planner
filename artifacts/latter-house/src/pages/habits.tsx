@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isFuture, isToday, startOfToday } from "date-fns";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 
 const HABIT_EMOJIS = ["🙏", "📖", "💪", "🏃", "💧", "🌿", "✝️", "🌅", "🎯", "💡", "❤️", "🧘"];
 const HABIT_COLORS = [
@@ -23,6 +24,16 @@ type HabitLog = { id: number; habitId: number; date: string; completed: boolean;
 
 type HabitForm = { name: string; description: string; emoji: string; color: string; category: string; frequency: "daily" | "weekly" };
 const emptyForm = (): HabitForm => ({ name: "", description: "", emoji: "🙏", color: "primary", category: "", frequency: "daily" });
+
+const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 28, scale: 0.97 },
+  visible: (i: number) => ({
+    opacity: 1, y: 0, scale: 1,
+    transition: { delay: i * 0.07, duration: 0.5, ease: EASE_OUT },
+  }),
+};
 
 export default function HabitsPage() {
   const queryClient = useQueryClient();
@@ -118,10 +129,21 @@ export default function HabitsPage() {
   const completedToday = activeHabits.filter(h => (logs as HabitLog[]).some(l => l.habitId === h.id && l.date === todayStr));
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6 animate-in fade-in duration-500 pb-24">
-      <header className="border-b border-border pb-5 space-y-3">
+    <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6 pb-24">
+      {/* Page header */}
+      <motion.header
+        className="border-b border-border pb-5 space-y-3"
+        initial={{ opacity: 0, y: -16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      >
         <div className="flex items-center gap-3">
-          <Flame className="w-7 h-7 text-primary shrink-0" />
+          <motion.div
+            animate={{ rotate: [0, -8, 8, 0] }}
+            transition={{ delay: 0.6, duration: 0.5, ease: "easeInOut" }}
+          >
+            <Flame className="w-7 h-7 text-primary shrink-0" />
+          </motion.div>
           <div>
             <h1 className="text-3xl md:text-4xl font-serif font-semibold tracking-tight text-foreground">Habit Tracker</h1>
             <p className="text-muted-foreground text-sm mt-0.5 font-serif italic">
@@ -130,91 +152,138 @@ export default function HabitsPage() {
           </div>
         </div>
         {!showForm && (
-          <Button onClick={() => { setShowForm(true); setEditingId(null); setForm(emptyForm()); }}
-            className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90">
-            <Plus className="w-4 h-4 mr-2" /> Add Habit
-          </Button>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.25, duration: 0.35, ease: "easeOut" }}
+          >
+            <Button
+              onClick={() => { setShowForm(true); setEditingId(null); setForm(emptyForm()); }}
+              className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <Plus className="w-4 h-4 mr-2" /> Add Habit
+            </Button>
+          </motion.div>
         )}
-      </header>
+      </motion.header>
 
       {/* Form */}
-      {showForm && (
-        <section className="journal-page p-6 space-y-4 animate-in slide-in-from-top-2 duration-300">
-          <h2 className="font-serif text-xl font-medium">{editingId !== null ? "Edit Habit" : "New Habit"}</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1">
-              <label className="text-xs uppercase tracking-wider text-muted-foreground">Habit name *</label>
-              <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Daily Bible reading" required />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs uppercase tracking-wider text-muted-foreground">Emoji</label>
-              <div className="flex flex-wrap gap-2">
-                {HABIT_EMOJIS.map(em => (
-                  <button key={em} type="button" onClick={() => setForm(f => ({ ...f, emoji: em }))}
-                    className={cn("w-9 h-9 rounded-lg text-lg flex items-center justify-center border-2 transition-all",
-                      form.emoji === em ? "border-primary bg-primary/10" : "border-border hover:border-primary/40"
-                    )}>
-                    {em}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs uppercase tracking-wider text-muted-foreground">Color</label>
-              <div className="flex gap-2">
-                {HABIT_COLORS.map(c => (
-                  <button key={c.value} type="button" onClick={() => setForm(f => ({ ...f, color: c.value }))}
-                    className={cn("w-7 h-7 rounded-full border-2 transition-all", c.cls,
-                      form.color === c.value ? "ring-2 ring-offset-1 ring-primary scale-110" : ""
-                    )} title={c.label} />
-                ))}
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+      <AnimatePresence>
+        {showForm && (
+          <motion.section
+            key="habit-form"
+            initial={{ opacity: 0, height: 0, y: -12 }}
+            animate={{ opacity: 1, height: "auto", y: 0 }}
+            exit={{ opacity: 0, height: 0, y: -12 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+            className="journal-page p-6 space-y-4 overflow-hidden"
+          >
+            <h2 className="font-serif text-xl font-medium">{editingId !== null ? "Edit Habit" : "New Habit"}</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs uppercase tracking-wider text-muted-foreground">Category (optional)</label>
-                <Input value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} placeholder="e.g. Spiritual" />
+                <label className="text-xs uppercase tracking-wider text-muted-foreground">Habit name *</label>
+                <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Daily Bible reading" required />
               </div>
-              <div className="space-y-1">
-                <label className="text-xs uppercase tracking-wider text-muted-foreground">Frequency</label>
-                <div className="flex gap-2 mt-1">
-                  {(["daily", "weekly"] as const).map(freq => (
-                    <button key={freq} type="button" onClick={() => setForm(f => ({ ...f, frequency: freq }))}
-                      className={cn("px-3 py-1.5 rounded-full text-xs font-medium border transition-all capitalize",
-                        form.frequency === freq ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border"
-                      )}>
-                      {freq}
-                    </button>
+              <div className="space-y-2">
+                <label className="text-xs uppercase tracking-wider text-muted-foreground">Emoji</label>
+                <div className="flex flex-wrap gap-2">
+                  {HABIT_EMOJIS.map(em => (
+                    <motion.button
+                      key={em}
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, emoji: em }))}
+                      whileHover={{ scale: 1.18 }}
+                      whileTap={{ scale: 0.9 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 18 }}
+                      className={cn("w-9 h-9 rounded-lg text-lg flex items-center justify-center border-2 transition-all",
+                        form.emoji === em ? "border-primary bg-primary/10" : "border-border hover:border-primary/40"
+                      )}
+                    >
+                      {em}
+                    </motion.button>
                   ))}
                 </div>
               </div>
-            </div>
-            <div className="flex gap-2 pt-1">
-              <Button type="submit" disabled={!form.name.trim()} className="bg-primary text-primary-foreground hover:bg-primary/90">
-                <Check className="w-4 h-4 mr-2" /> {editingId !== null ? "Save" : "Add Habit"}
-              </Button>
-              <Button type="button" variant="outline" onClick={() => { setShowForm(false); setEditingId(null); }}>
-                <X className="w-4 h-4 mr-2" /> Cancel
-              </Button>
-            </div>
-          </form>
-        </section>
-      )}
+              <div className="space-y-2">
+                <label className="text-xs uppercase tracking-wider text-muted-foreground">Color</label>
+                <div className="flex gap-2">
+                  {HABIT_COLORS.map(c => (
+                    <motion.button
+                      key={c.value}
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, color: c.value }))}
+                      whileHover={{ scale: 1.2 }}
+                      whileTap={{ scale: 0.88 }}
+                      transition={{ type: "spring", stiffness: 450, damping: 18 }}
+                      className={cn("w-7 h-7 rounded-full border-2 transition-all", c.cls,
+                        form.color === c.value ? "ring-2 ring-offset-1 ring-primary scale-110" : ""
+                      )}
+                      title={c.label}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs uppercase tracking-wider text-muted-foreground">Category (optional)</label>
+                  <Input value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} placeholder="e.g. Spiritual" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs uppercase tracking-wider text-muted-foreground">Frequency</label>
+                  <div className="flex gap-2 mt-1">
+                    {(["daily", "weekly"] as const).map(freq => (
+                      <motion.button
+                        key={freq}
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, frequency: freq }))}
+                        whileTap={{ scale: 0.94 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 22 }}
+                        className={cn("px-3 py-1.5 rounded-full text-xs font-medium border transition-all capitalize",
+                          form.frequency === freq ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border"
+                        )}
+                      >
+                        {freq}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-2 pt-1">
+                <Button type="submit" disabled={!form.name.trim()} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Check className="w-4 h-4 mr-2" /> {editingId !== null ? "Save" : "Add Habit"}
+                </Button>
+                <Button type="button" variant="outline" onClick={() => { setShowForm(false); setEditingId(null); }}>
+                  <X className="w-4 h-4 mr-2" /> Cancel
+                </Button>
+              </div>
+            </form>
+          </motion.section>
+        )}
+      </AnimatePresence>
 
       {habitsLoading ? (
         <div className="flex h-48 items-center justify-center">
-          <div className="w-7 h-7 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+          <motion.div
+            className="w-7 h-7 border-2 border-primary/30 border-t-primary rounded-full"
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
+          />
         </div>
       ) : activeHabits.length === 0 && !showForm ? (
-        <div className="journal-page p-10 text-center space-y-2">
+        <motion.div
+          className="journal-page p-10 text-center space-y-2"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
           <Flame className="w-8 h-8 text-primary/30 mx-auto" />
           <p className="font-serif text-muted-foreground">No habits yet</p>
           <p className="text-xs text-muted-foreground/60">Build daily disciplines that transform your life</p>
-        </div>
+        </motion.div>
       ) : (
         <div className="space-y-4">
-          {/* Month calendar grid per habit */}
-          {activeHabits.map(habit => {
+          {/* Staggered habit cards */}
+          {activeHabits.map((habit, idx) => {
             const habitLogs = new Set((logs as HabitLog[]).filter(l => l.habitId === habit.id && l.completed).map(l => l.date));
             const streak = getStreak(habit.id);
             const colorCls = getColorCls(habit.color);
@@ -222,10 +291,24 @@ export default function HabitsPage() {
             const done = monthDays.filter(d => habitLogs.has(format(d, "yyyy-MM-dd"))).length;
 
             return (
-              <div key={habit.id} className="journal-page p-4 space-y-3">
+              <motion.div
+                key={habit.id}
+                custom={idx}
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+                layout
+                className="journal-page p-4 space-y-3"
+              >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="text-2xl shrink-0">{habit.emoji ?? "🙏"}</span>
+                    <motion.span
+                      className="text-2xl shrink-0"
+                      whileHover={{ scale: 1.25, rotate: [-3, 3, 0] }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {habit.emoji ?? "🙏"}
+                    </motion.span>
                     <div className="min-w-0">
                       <h3 className="font-serif font-medium text-foreground text-base">{habit.name}</h3>
                       {habit.description && <p className="text-xs text-muted-foreground truncate">{habit.description}</p>}
@@ -233,21 +316,37 @@ export default function HabitsPage() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {streak > 0 && (
-                      <span className="text-xs font-medium text-amber-600 flex items-center gap-1">
+                      <motion.span
+                        key={`streak-${streak}`}
+                        className="text-xs font-medium text-amber-600 flex items-center gap-1"
+                        initial={{ scale: 0.7, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 18 }}
+                      >
                         🔥 {streak}d
-                      </span>
+                      </motion.span>
                     )}
                     <span className="text-xs text-muted-foreground">{done}/{monthTotal}</span>
-                    <button onClick={() => handleEdit(habit)} className="p-1 text-muted-foreground/50 hover:text-muted-foreground transition-colors">
+                    <motion.button
+                      onClick={() => handleEdit(habit)}
+                      whileHover={{ scale: 1.15 }}
+                      whileTap={{ scale: 0.9 }}
+                      className="p-1 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+                    >
                       <Settings className="w-3.5 h-3.5" />
-                    </button>
-                    <button onClick={() => handleDelete(habit.id)} className="p-1 text-muted-foreground/50 hover:text-destructive transition-colors">
+                    </motion.button>
+                    <motion.button
+                      onClick={() => handleDelete(habit.id)}
+                      whileHover={{ scale: 1.15 }}
+                      whileTap={{ scale: 0.9 }}
+                      className="p-1 text-muted-foreground/50 hover:text-destructive transition-colors"
+                    >
                       <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    </motion.button>
                   </div>
                 </div>
 
-                {/* Day grid */}
+                {/* Day grid with animated cells */}
                 <div className="flex flex-wrap gap-1">
                   {monthDays.map(day => {
                     const ds = format(day, "yyyy-MM-dd");
@@ -256,13 +355,19 @@ export default function HabitsPage() {
                     const future = isFuture(day) && !isTodayDay;
 
                     return (
-                      <button
+                      <motion.button
                         key={ds}
                         onClick={() => !future && handleToggleDay(habit, ds)}
                         disabled={future}
                         title={format(day, "MMM d")}
+                        whileTap={!future ? { scale: 0.82 } : {}}
+                        animate={isLogged ? { scale: [1, 1.22, 1] } : { scale: 1 }}
+                        transition={isLogged
+                          ? { duration: 0.32, ease: [0.34, 1.56, 0.64, 1], times: [0, 0.45, 1] }
+                          : { type: "spring", stiffness: 400, damping: 20 }
+                        }
                         className={cn(
-                          "w-7 h-7 rounded text-[10px] font-medium transition-all border",
+                          "w-7 h-7 rounded text-[10px] font-medium transition-colors border",
                           isLogged
                             ? cn(colorCls, "border-transparent")
                             : isTodayDay
@@ -273,33 +378,44 @@ export default function HabitsPage() {
                         )}
                       >
                         {format(day, "d")}
-                      </button>
+                      </motion.button>
                     );
                   })}
                 </div>
-              </div>
+              </motion.div>
             );
           })}
 
           {/* Inactive habits */}
-          {inactiveHabits.length > 0 && (
-            <div className="space-y-2">
-              <button onClick={() => setShowInactive(s => !s)}
-                className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors flex items-center gap-1">
-                {showInactive ? "Hide" : "Show"} {inactiveHabits.length} paused habit{inactiveHabits.length !== 1 ? "s" : ""}
-              </button>
-              {showInactive && inactiveHabits.map(h => (
-                <div key={h.id} className="journal-page p-3 opacity-50 flex items-center gap-3">
-                  <span>{h.emoji ?? "🙏"}</span>
-                  <span className="text-sm text-muted-foreground flex-1">{h.name}</span>
-                  <button onClick={() => handleToggleActive(h)} className="text-xs text-primary hover:text-primary/80">Resume</button>
-                  <button onClick={() => handleDelete(h.id)} className="text-muted-foreground/40 hover:text-destructive">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+          <AnimatePresence>
+            {inactiveHabits.length > 0 && (
+              <div className="space-y-2">
+                <button onClick={() => setShowInactive(s => !s)}
+                  className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors flex items-center gap-1">
+                  {showInactive ? "Hide" : "Show"} {inactiveHabits.length} paused habit{inactiveHabits.length !== 1 ? "s" : ""}
+                </button>
+                <AnimatePresence>
+                  {showInactive && inactiveHabits.map((h, i) => (
+                    <motion.div
+                      key={h.id}
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ delay: i * 0.05, duration: 0.25 }}
+                      className="journal-page p-3 opacity-50 flex items-center gap-3 overflow-hidden"
+                    >
+                      <span>{h.emoji ?? "🙏"}</span>
+                      <span className="text-sm text-muted-foreground flex-1">{h.name}</span>
+                      <button onClick={() => handleToggleActive(h)} className="text-xs text-primary hover:text-primary/80">Resume</button>
+                      <button onClick={() => handleDelete(h.id)} className="text-muted-foreground/40 hover:text-destructive">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
+          </AnimatePresence>
         </div>
       )}
     </div>

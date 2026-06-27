@@ -7,13 +7,6 @@ import { isOwner } from "../lib/ownerCheck";
 
 const router = Router();
 
-function tierFromProduct(product: string | Stripe.Product | Stripe.DeletedProduct | null | undefined): "regular" | "premium" {
-  if (!product || typeof product === "string") return "regular";
-  if ("deleted" in product && product.deleted) return "regular";
-  const meta = (product as Stripe.Product).metadata ?? {};
-  return meta.tier === "premium" ? "premium" : "regular";
-}
-
 function isStripeResourceMissing(err: unknown): boolean {
   return (
     err instanceof Error &&
@@ -26,7 +19,7 @@ router.get("/stripe/subscription-status", requireAuth, async (req, res) => {
   const userId = req.user!.id;
 
   if (await isOwner(userId)) {
-    res.json({ tier: "premium" });
+    res.json({ tier: "regular" });
     return;
   }
 
@@ -34,7 +27,7 @@ router.get("/stripe/subscription-status", requireAuth, async (req, res) => {
     const user = await stripeStorage.getUser(userId);
 
     if (user?.lifetimeAccess) {
-      res.json({ tier: "premium" });
+      res.json({ tier: "regular" });
       return;
     }
 
@@ -56,20 +49,16 @@ router.get("/stripe/subscription-status", requireAuth, async (req, res) => {
     );
 
     if (!activeSub) {
+      // Check scholarship status
+      if (user?.scholarshipStatus === "approved") {
+        res.json({ tier: "regular" });
+        return;
+      }
       res.json({ tier: "free" });
       return;
     }
 
-    const priceProduct = activeSub.items.data[0]?.price?.product;
-    const productId = typeof priceProduct === "string" ? priceProduct : priceProduct?.id;
-
-    let tier: "regular" | "premium" = "regular";
-    if (productId) {
-      const product = await stripe.products.retrieve(productId);
-      tier = tierFromProduct(product);
-    }
-
-    res.json({ tier });
+    res.json({ tier: "regular" });
   } catch (err) {
     if (isStripeResourceMissing(err)) {
       try {
@@ -117,9 +106,16 @@ router.get("/stripe/products", async (req, res) => {
 
 router.post("/stripe/checkout", requireAuth, async (req, res) => {
   try {
-    const { priceId } = req.body as { priceId: string };
-    if (!priceId) {
-      res.status(400).json({ error: "priceId is required" });
+    const body = req.body as {
+      priceId?: string;
+      amountCents?: number;
+      mode?: "subscription" | "payment";
+    };
+
+    const { priceId, amountCents, mode = "subscription" } = body;
+
+    if (!priceId && (!amountCents || amountCents < 500)) {
+      res.status(400).json({ error: "priceId or amountCents (minimum 500) is required" });
       return;
     }
 
@@ -160,13 +156,29 @@ router.post("/stripe/checkout", requireAuth, async (req, res) => {
     const host = req.headers["x-forwarded-host"] || req.headers.host || "localhost";
     const origin = `${proto}://${host}`;
 
+    let resolvedPriceId = priceId;
+
+    if (!resolvedPriceId && amountCents) {
+      const price = await stripe.prices.create({
+        currency: "usd",
+        unit_amount: amountCents,
+        ...(mode === "subscription"
+          ? { recurring: { interval: "month" } }
+          : {}),
+        product_data: {
+          name: mode === "subscription" ? "LatterHouseLife Monthly Donation" : "LatterHouseLife One-Time Donation",
+        },
+      });
+      resolvedPriceId = price.id;
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ["card"],
-      line_items: [{ price: priceId, quantity: 1 }],
-      mode: "subscription",
-      success_url: `${origin}/?subscribed=true`,
-      cancel_url: `${origin}/`,
+      line_items: [{ price: resolvedPriceId, quantity: 1 }],
+      mode: mode === "subscription" ? "subscription" : "payment",
+      success_url: `${origin}/?donated=true`,
+      cancel_url: `${origin}/pricing`,
     });
 
     res.json({ url: session.url });

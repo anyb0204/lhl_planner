@@ -8,12 +8,50 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useClerk } from "@clerk/react";
+import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { NotificationCenter } from "@/components/notification-center";
 import { HelpModal } from "@/components/help-modal";
 import { useTier } from "@/contexts/TierContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { SearchModal } from "@/components/search-modal";
+
+const PARTICLES = [
+  { left: "12%",  dur: 13, delay: 0,   size: 14 },
+  { left: "27%",  dur: 17, delay: 3.5, size: 11 },
+  { left: "44%",  dur: 11, delay: 7,   size: 16 },
+  { left: "58%",  dur: 15, delay: 1.5, size: 10 },
+  { left: "72%",  dur: 19, delay: 5,   size: 13 },
+  { left: "87%",  dur: 12, delay: 9,   size: 11 },
+  { left: "35%",  dur: 16, delay: 4.5, size: 9  },
+  { left: "63%",  dur: 14, delay: 8,   size: 12 },
+];
+
+function FloatingParticles() {
+  return (
+    <div className="main-ambient-bg" aria-hidden>
+      {PARTICLES.map((p, i) => (
+        <span
+          key={i}
+          className="leaf-particle"
+          style={{
+            left: p.left,
+            animationDuration: `${p.dur}s`,
+            animationDelay: `${p.delay}s`,
+            fontSize: `${p.size}px`,
+            color: i % 3 === 0
+              ? "hsl(138 28% 52% / 0.55)"
+              : i % 3 === 1
+              ? "hsl(43 52% 68% / 0.45)"
+              : "hsl(138 22% 44% / 0.4)",
+          }}
+        >
+          {i % 3 === 0 ? "🍃" : i % 3 === 1 ? "✦" : "🌿"}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 const mainNavigation = [
   { name: "Dashboard", short: "Home", href: "/dashboard", icon: LayoutDashboard },
@@ -61,7 +99,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { signOut } = useClerk();
   const tier = useTier();
-  const isPremium = tier === "premium";
+  const isPremium = tier !== "free";
   const isFree = tier === "free";
   const { theme, toggleTheme } = useTheme();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -145,11 +183,29 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <span className="flex-1 text-left text-sidebar-foreground/50 text-xs uppercase tracking-wider">Trackers</span>
             <span className="text-sidebar-foreground/40 text-xs">{trackersOpen ? "▴" : "▾"}</span>
           </button>
-          {trackersOpen && (
-            <div className="space-y-1 animate-in slide-in-from-top-1 duration-200">
-              {trackerNavigation.map(item => <NavItem key={item.name} item={item} />)}
-            </div>
-          )}
+          <AnimatePresence initial={false}>
+            {trackersOpen && (
+              <motion.div
+                key="trackers"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                className="space-y-1 overflow-hidden"
+              >
+                {trackerNavigation.map((item, i) => (
+                  <motion.div
+                    key={item.name}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.045, duration: 0.25, ease: "easeOut" }}
+                  >
+                    <NavItem item={item} />
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
 
@@ -163,30 +219,46 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </span>
             <span className="text-sidebar-foreground/40 text-xs">{premiumOpen ? "▴" : "▾"}</span>
           </button>
-          {premiumOpen && (
-            <div className="space-y-1 animate-in slide-in-from-top-1 duration-200">
-              {premiumNavigation.map(item => {
+          <AnimatePresence initial={false}>
+            {premiumOpen && (
+            <motion.div
+              key="premium"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+              className="space-y-1 overflow-hidden"
+            >
+              {premiumNavigation.map((item, i) => {
                 const isActive = location.startsWith(item.href);
                 return (
-                  <Link key={item.name} href={item.href} className={cn(
-                    "flex items-center gap-3 px-4 py-2.5 rounded-md text-sm transition-all duration-300",
-                    isActive
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm font-medium"
-                      : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground font-medium"
-                  )}>
-                    <item.icon className={cn("h-[18px] w-[18px] shrink-0", isActive ? "text-sidebar-primary-foreground" : "text-sidebar-foreground/60")} />
-                    <span className="flex-1">{item.name}</span>
-                    {!isPremium && <Lock className="w-3 h-3 text-sidebar-foreground/30 shrink-0" />}
-                  </Link>
+                  <motion.div
+                    key={item.name}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.045, duration: 0.25, ease: "easeOut" }}
+                  >
+                    <Link href={item.href} className={cn(
+                      "flex items-center gap-3 px-4 py-2.5 rounded-md text-sm transition-all duration-300",
+                      isActive
+                        ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm font-medium"
+                        : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground font-medium"
+                    )}>
+                      <item.icon className={cn("h-[18px] w-[18px] shrink-0", isActive ? "text-sidebar-primary-foreground" : "text-sidebar-foreground/60")} />
+                      <span className="flex-1">{item.name}</span>
+                      {!isPremium && <Lock className="w-3 h-3 text-sidebar-foreground/30 shrink-0" />}
+                    </Link>
+                  </motion.div>
                 );
               })}
-              {!isPremium && (
+              {isFree && (
                 <Link href="/pricing" className="flex items-center gap-2 px-4 py-2 text-xs text-primary/80 hover:text-primary transition-colors">
-                  <Sparkles className="w-3 h-3" /> Upgrade to Premium
+                  <Sparkles className="w-3 h-3" /> Support to unlock
                 </Link>
               )}
-            </div>
-          )}
+            </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
 
@@ -196,7 +268,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <Link href="/pricing"
             className="w-full flex items-center gap-3 px-4 py-2.5 rounded-md text-sm text-primary hover:bg-sidebar-accent transition-all duration-300 font-semibold">
             <Sparkles className="h-[18px] w-[18px] shrink-0" />
-            Upgrade Plan
+            Support This App
           </Link>
         )}
         {!isFree && (
@@ -298,10 +370,23 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       )}
 
       {/* Mobile "More" drawer */}
+      <AnimatePresence>
       {drawerOpen && (
         <div className="md:hidden fixed inset-0 z-30 flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setDrawerOpen(false)} />
-          <div className="relative bg-sidebar rounded-t-2xl shadow-2xl max-h-[80vh] overflow-y-auto animate-in slide-in-from-bottom duration-200">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setDrawerOpen(false)}
+          />
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 32, stiffness: 320, mass: 0.9 }}
+            className="relative bg-sidebar rounded-t-2xl shadow-2xl max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between px-5 py-4 border-b border-sidebar-border/50">
               <span className="font-serif text-base font-medium text-sidebar-foreground">Menu</span>
               <button onClick={() => setDrawerOpen(false)} className="p-1 text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors">
@@ -390,9 +475,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 </button>
               </div>
             </nav>
-          </div>
+          </motion.div>
         </div>
       )}
+      </AnimatePresence>
 
       {/* Desktop sidebar */}
       <div className="hidden md:flex w-64 flex-col fixed inset-y-0 border-r border-sidebar-border bg-sidebar z-10">
@@ -411,7 +497,19 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       <main className="flex-1 md:pl-64 overflow-y-auto w-full relative z-0 pb-20 md:pb-0">
-        {children}
+        <FloatingParticles />
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={location}
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+            style={{ minHeight: "100%", position: "relative", zIndex: 1 }}
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
       </main>
     </div>
   );

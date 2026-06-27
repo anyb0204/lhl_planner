@@ -12,6 +12,7 @@ import businessRouter from "./business";
 import calendarRouter from "./calendar";
 import cronRouter from "./cron";
 import memoriesRouter from "./memories";
+import scholarshipRouter from "./scholarship";
 
 const router: IRouter = Router();
 
@@ -53,5 +54,6 @@ router.use(pathGate("/cron", cronRouter));
 router.use(pathGate("/notification-prefs", cronRouter));
 router.use(pathGate("/push-subscription", cronRouter));
 router.use(pathGate("/memories", memoriesRouter));
+router.use(pathGate("/scholarship", scholarshipRouter));
 
 export default router;
