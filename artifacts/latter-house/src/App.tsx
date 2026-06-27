@@ -65,7 +65,6 @@ function stripBase(path: string): string {
 
 const clerkAppearance = {
   baseTheme: shadcn,
-  cssLayerName: "clerk",
   options: {
     logoPlacement: "inside" as const,
     logoLinkUrl: basePath || "/",

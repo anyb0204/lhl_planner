@@ -22,7 +22,9 @@ type Props = { open: boolean; onClose: () => void };
 
 export function SearchModal({ open, onClose }: Props) {
   const [query, setQuery] = useState("");
+  const [activeIndex, setActiveIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
   const [, setLocation] = useLocation();
 
   const { data: todos = [] } = useListTodos();
@@ -32,9 +34,14 @@ export function SearchModal({ open, onClose }: Props) {
   useEffect(() => {
     if (open) {
       setQuery("");
+      setActiveIndex(-1);
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [open]);
+
+  useEffect(() => {
+    setActiveIndex(-1);
+  }, [query]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -50,6 +57,20 @@ export function SearchModal({ open, onClose }: Props) {
   }, [open, onClose]);
 
   const q = query.trim().toLowerCase();
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, results: Result[]) => {
+    if (results.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIndex(i => Math.min(i + 1, results.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex(i => Math.max(i - 1, 0));
+    } else if (e.key === "Enter" && activeIndex >= 0) {
+      e.preventDefault();
+      handleSelect(results[activeIndex]);
+    }
+  };
 
   const results: Result[] = q
     ? [
@@ -99,6 +120,7 @@ export function SearchModal({ open, onClose }: Props) {
             ref={inputRef}
             value={query}
             onChange={e => setQuery(e.target.value)}
+            onKeyDown={e => handleKeyDown(e, results)}
             placeholder="Search tasks, prayers, habits…"
             className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground/50 outline-none text-sm"
           />
@@ -122,18 +144,23 @@ export function SearchModal({ open, onClose }: Props) {
               <p className="text-sm text-muted-foreground">No results for "{query}"</p>
             </div>
           ) : (
-            <ul>
-              {results.map(result => {
+            <ul ref={listRef}>
+              {results.map((result, index) => {
                 const meta = TYPE_META[result.type];
+                const isActive = index === activeIndex;
                 return (
                   <li key={result.id}>
                     <button
                       onClick={() => handleSelect(result)}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left group"
+                      ref={el => { if (isActive && el) el.scrollIntoView({ block: "nearest" }); }}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-4 py-3 transition-colors text-left group",
+                        isActive ? "bg-primary/10" : "hover:bg-muted/50"
+                      )}
                     >
                       <meta.icon className={cn("w-4 h-4 shrink-0", meta.color)} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-foreground truncate group-hover:text-primary transition-colors">{result.title}</p>
+                        <p className={cn("text-sm truncate transition-colors", isActive ? "text-primary" : "text-foreground group-hover:text-primary")}>{result.title}</p>
                         {result.sub && <p className="text-xs text-muted-foreground">{result.sub}</p>}
                       </div>
                       <span className="text-[10px] text-muted-foreground/50 shrink-0 bg-muted px-1.5 py-0.5 rounded">{meta.label}</span>
@@ -147,7 +174,7 @@ export function SearchModal({ open, onClose }: Props) {
 
         {/* Footer */}
         <div className="px-4 py-2 border-t border-border bg-muted/20">
-          <p className="text-[10px] text-muted-foreground/50">Press ↵ to open · ESC to close</p>
+          <p className="text-[10px] text-muted-foreground/50">↑↓ to navigate · ↵ to open · ESC to close</p>
         </div>
       </div>
     </div>
