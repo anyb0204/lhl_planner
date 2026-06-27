@@ -395,10 +395,12 @@ function ClerkProviderWithRoutes() {
   return (
     <ClerkProvider
       publishableKey={clerkPubKey}
-      proxyUrl={clerkProxyUrl}
+      {...(clerkProxyUrl ? { proxyUrl: clerkProxyUrl } : {})}
       appearance={clerkAppearance}
       signInUrl={`${basePath}/sign-in`}
       signUpUrl={`${basePath}/sign-up`}
+      afterSignInUrl={`${basePath}/`}
+      afterSignUpUrl={`${basePath}/`}
       localization={{
         signIn: { start: { title: "Welcome back", subtitle: "Sign in to your Latter House Life planner" } },
         signUp: { start: { title: "Create your account", subtitle: "Start your faith-filled planning journey" } },
