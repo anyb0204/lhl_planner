@@ -30,6 +30,11 @@ node_modules
 # secrets / certificates
 *.pem
 
+# local env files (never commit real secrets)
+.env
+.env.*
+!.env.example
+
 # misc
 /.sass-cache
 /connect.lock
