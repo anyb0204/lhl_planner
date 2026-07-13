@@ -17,6 +17,13 @@ services:
         value: 10000
       - key: DATABASE_URL
         sync: false
+      # Required at import by lib/integrations-openai-ai-server (the api-server
+      # throws on boot if these are missing). Set real values in the Render
+      # dashboard; e.g. AI_INTEGRATIONS_OPENAI_BASE_URL=https://api.openai.com/v1
+      - key: AI_INTEGRATIONS_OPENAI_BASE_URL
+        sync: false
+      - key: AI_INTEGRATIONS_OPENAI_API_KEY
+        sync: false
       - key: CLERK_PUBLISHABLE_KEY
         sync: false
       - key: CLERK_SECRET_KEY
