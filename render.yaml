@@ -27,3 +27,11 @@ services:
         sync: false
       - key: BASE_PATH
         value: ""
+      - key: AI_MONTHLY_DOLLAR_LIMIT
+        value: 25
+      - key: AI_SOFT_LIMIT_PERCENT
+        value: 80
+      - key: AI_HARD_LIMIT_PERCENT
+        value: 100
+      - key: AI_LIMIT_TIMEZONE
+        value: America/Chicago

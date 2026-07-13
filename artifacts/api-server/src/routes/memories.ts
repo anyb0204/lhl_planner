@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { requireAuth } from "../middlewares/requireAuth";
+import { recordAiUsage } from "../lib/aiBudget";
 import { z } from "zod/v4";
 
 const router = Router();
@@ -54,8 +55,9 @@ router.patch("/memories/:id", requireAuth, async (req, res) => {
 export async function extractAndSaveMemories(userId: string, conversationText: string, allowMemory = true): Promise<void> {
   if (!allowMemory) return;
   try {
+    const model = "gpt-4o-mini";
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model,
       max_completion_tokens: 400,
       messages: [
         {
@@ -66,6 +68,8 @@ export async function extractAndSaveMemories(userId: string, conversationText: s
       ],
       response_format: { type: "json_object" },
     });
+
+    await recordAiUsage({ userId, bucket: "internal", endpoint: "memories/extract", model, usage: response.usage });
 
     const raw = JSON.parse(response.choices[0]?.message?.content ?? "{}");
     const items: Array<{ kind: string; content: string }> = Array.isArray(raw) ? raw : (Array.isArray(raw.memories) ? raw.memories : []);

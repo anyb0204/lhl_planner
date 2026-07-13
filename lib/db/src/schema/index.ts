@@ -26,3 +26,4 @@ export * from "./wellness";
 export * from "./lifestyle";
 export * from "./business";
 export * from "./calendar";
+export * from "./aiUsage";

@@ -11,13 +11,13 @@ import {
 } from "@workspace/api-zod";
 import { requireAuth } from "../middlewares/requireAuth";
 import { requireTier } from "../middlewares/requireTier";
-import { aiRateLimit } from "../lib/aiRateLimit";
+import { aiRateLimit, aiBudgetGuard, recordAiUsage } from "../lib/aiBudget";
 import { z } from "zod/v4";
 import { getUserMemoryContext } from "./memories";
 
 const router = Router();
 
-router.post("/ai/brain-dump-help", requireAuth, aiRateLimit("regular-ai", 20), async (req, res) => {
+router.post("/ai/brain-dump-help", requireAuth, aiBudgetGuard(), aiRateLimit("regular-ai", 20), async (req, res) => {
   try {
     const body = BrainDumpHelpBody.safeParse(req.body);
     if (!body.success) {
@@ -29,8 +29,9 @@ router.post("/ai/brain-dump-help", requireAuth, aiRateLimit("regular-ai", 20), a
       return;
     }
 
+    const model = "gpt-4o-mini";
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model,
       max_completion_tokens: 1500,
       messages: [
         {
@@ -44,7 +45,7 @@ When given a brain dump, you:
 4. Offer warm, practical encouragement
 
 Return a JSON object with:
-- "tasks": array of {text: string, priority: "high"|"medium"|"low"} 
+- "tasks": array of {text: string, priority: "high"|"medium"|"low"}
 - "followUpQuestions": array of strings (2-5 thoughtful, specific questions based on what she wrote)
 - "encouragement": a warm, faith-infused encouragement (1-2 sentences)`,
         },
@@ -55,6 +56,8 @@ Return a JSON object with:
       ],
       response_format: { type: "json_object" },
     });
+
+    await recordAiUsage({ userId: req.user!.id, bucket: "regular-ai", endpoint: "brain-dump-help", model, usage: response.usage, log: req.log });
 
     const content = response.choices[0]?.message?.content ?? "{}";
     const parsed = JSON.parse(content);
@@ -70,7 +73,7 @@ Return a JSON object with:
   }
 });
 
-router.post("/ai/scripture", requireAuth, aiRateLimit("regular-ai", 20), async (req, res) => {
+router.post("/ai/scripture", requireAuth, aiBudgetGuard(), aiRateLimit("regular-ai", 20), async (req, res) => {
   try {
     const body = GenerateScriptureBody.safeParse(req.body);
     if (!body.success) {
@@ -95,8 +98,9 @@ router.post("/ai/scripture", requireAuth, aiRateLimit("regular-ai", 20), async (
 
 IMPORTANT: Every call should return a DIFFERENT scripture. Do not repeat common ones. Dig into the full canon — Old Testament, Psalms, Proverbs, Prophets, Epistles, Gospels.`);
 
+    const model = "gpt-4o-mini";
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model,
       max_completion_tokens: 500,
       messages: [
         { role: "system", content: systemParts.join("\n\n") },
@@ -104,6 +108,8 @@ IMPORTANT: Every call should return a DIFFERENT scripture. Do not repeat common 
       ],
       response_format: { type: "json_object" },
     });
+
+    await recordAiUsage({ userId, bucket: "regular-ai", endpoint: "scripture", model, usage: response.usage, log: req.log });
 
     const content = response.choices[0]?.message?.content ?? "{}";
     const parsed = JSON.parse(content);
@@ -127,7 +133,7 @@ IMPORTANT: Every call should return a DIFFERENT scripture. Do not repeat common 
   }
 });
 
-router.post("/ai/encouragement", requireAuth, aiRateLimit("regular-ai", 20), async (req, res) => {
+router.post("/ai/encouragement", requireAuth, aiBudgetGuard(), aiRateLimit("regular-ai", 20), async (req, res) => {
   try {
     const body = GenerateEncouragementBody.safeParse(req.body);
     if (!body.success) {
@@ -155,8 +161,9 @@ Return a JSON object with:
 - "scriptureReference": optional scripture reference that supports the message (can be null)
 - "theme": a 2-4 word theme label for this encouragement`);
 
+    const model = "gpt-4o-mini";
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model,
       max_completion_tokens: 300,
       messages: [
         { role: "system", content: systemParts.join("\n\n") },
@@ -164,6 +171,8 @@ Return a JSON object with:
       ],
       response_format: { type: "json_object" },
     });
+
+    await recordAiUsage({ userId, bucket: "regular-ai", endpoint: "encouragement", model, usage: response.usage, log: req.log });
 
     const content = response.choices[0]?.message?.content ?? "{}";
     const parsed = JSON.parse(content);
@@ -185,7 +194,7 @@ Return a JSON object with:
   }
 });
 
-router.post("/ai/truth-generator", requireAuth, aiRateLimit("regular-ai", 20), async (req, res) => {
+router.post("/ai/truth-generator", requireAuth, aiBudgetGuard(), aiRateLimit("regular-ai", 20), async (req, res) => {
   try {
     const body = GenerateTruthBody.safeParse(req.body);
     if (!body.success) {
@@ -193,8 +202,9 @@ router.post("/ai/truth-generator", requireAuth, aiRateLimit("regular-ai", 20), a
       return;
     }
 
+    const model = "gpt-4o-mini";
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model,
       max_completion_tokens: 700,
       messages: [
         {
@@ -220,6 +230,8 @@ Go deep. Use scriptures that are precise and powerful — not just the obvious o
       response_format: { type: "json_object" },
     });
 
+    await recordAiUsage({ userId: req.user!.id, bucket: "regular-ai", endpoint: "truth-generator", model, usage: response.usage, log: req.log });
+
     const content = response.choices[0]?.message?.content ?? "{}";
     const parsed = JSON.parse(content);
 
@@ -236,7 +248,7 @@ Go deep. Use scriptures that are precise and powerful — not just the obvious o
   }
 });
 
-router.post("/ai/planner-help", requireAuth, aiRateLimit("regular-ai", 20), async (req, res) => {
+router.post("/ai/planner-help", requireAuth, aiBudgetGuard(), aiRateLimit("regular-ai", 20), async (req, res) => {
   try {
     const body = PlannerHelpBody.safeParse(req.body);
     if (!body.success) {
@@ -248,8 +260,9 @@ router.post("/ai/planner-help", requireAuth, aiRateLimit("regular-ai", 20), asyn
       ? `\n\nHere is what she has planned so far:\n${body.data.currentEntries}`
       : "";
 
+    const model = "gpt-4o-mini";
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model,
       max_completion_tokens: 900,
       messages: [
         {
@@ -276,6 +289,8 @@ Return a JSON object with:
       response_format: { type: "json_object" },
     });
 
+    await recordAiUsage({ userId: req.user!.id, bucket: "regular-ai", endpoint: "planner-help", model, usage: response.usage, log: req.log });
+
     const content = response.choices[0]?.message?.content ?? "{}";
     const parsed = JSON.parse(content);
 
@@ -290,7 +305,7 @@ Return a JSON object with:
   }
 });
 
-router.post("/ai/get-back-on-track", requireAuth, aiRateLimit("regular-ai", 20), async (req, res) => {
+router.post("/ai/get-back-on-track", requireAuth, aiBudgetGuard(), aiRateLimit("regular-ai", 20), async (req, res) => {
   try {
     const body = z.object({ daysAway: z.number().int().nullable().optional() }).safeParse(req.body);
     if (!body.success) {
@@ -302,8 +317,9 @@ router.post("/ai/get-back-on-track", requireAuth, aiRateLimit("regular-ai", 20),
       ? `She has been away for about ${body.data.daysAway} day${body.data.daysAway === 1 ? "" : "s"}.`
       : "She has been away for a little while.";
 
+    const model = "gpt-4o-mini";
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model,
       max_completion_tokens: 800,
       messages: [
         {
@@ -326,6 +342,8 @@ Return a JSON object with:
       response_format: { type: "json_object" },
     });
 
+    await recordAiUsage({ userId: req.user!.id, bucket: "regular-ai", endpoint: "get-back-on-track", model, usage: response.usage, log: req.log });
+
     const content = response.choices[0]?.message?.content ?? "{}";
     const parsed = JSON.parse(content);
 
@@ -346,13 +364,14 @@ Return a JSON object with:
 
 const TaskBreakdownBody = z.object({ task: z.string().min(1).max(500) });
 
-router.post("/ai/task-breakdown", requireAuth, aiRateLimit("regular-ai", 20), async (req, res) => {
+router.post("/ai/task-breakdown", requireAuth, aiBudgetGuard(), aiRateLimit("regular-ai", 20), async (req, res) => {
   try {
     const body = TaskBreakdownBody.safeParse(req.body);
     if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
 
+    const model = "gpt-4o-mini";
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model,
       max_completion_tokens: 1200,
       messages: [
         {
@@ -376,6 +395,8 @@ Return a JSON object with:
       ],
       response_format: { type: "json_object" },
     });
+
+    await recordAiUsage({ userId: req.user!.id, bucket: "regular-ai", endpoint: "task-breakdown", model, usage: response.usage, log: req.log });
 
     const content = response.choices[0]?.message?.content ?? "{}";
     const parsed = JSON.parse(content);
@@ -405,7 +426,7 @@ const HealthSummaryBody = z.object({ conditions: z.string().optional(), medicati
 const FinancialCoachingBody = z.object({ entries: z.string().optional(), month: z.string().optional() });
 const DevotionalBody = z.object({ goals: z.string().optional() });
 
-router.post("/ai/weekly-plan", requireAuth, requireTier("premium"), aiRateLimit("premium-ai", 10), async (req, res) => {
+router.post("/ai/weekly-plan", requireAuth, requireTier("premium"), aiBudgetGuard(), aiRateLimit("premium-ai", 10), async (req, res) => {
   try {
     const body = WeeklyPlanBody.safeParse(req.body);
     if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
@@ -413,8 +434,9 @@ router.post("/ai/weekly-plan", requireAuth, requireTier("premium"), aiRateLimit(
     const goalsCtx = body.data.goals ? `Her current goals: ${body.data.goals}` : "";
     const tasksCtx = body.data.recentTasks ? `Recent tasks she's been working on: ${body.data.recentTasks}` : "";
 
+    const model = "gpt-5.4";
     const response = await openai.chat.completions.create({
-      model: "gpt-5.4",
+      model,
       max_completion_tokens: 8192,
       messages: [
         {
@@ -442,6 +464,8 @@ Return a JSON object with:
       response_format: { type: "json_object" },
     });
 
+    await recordAiUsage({ userId: req.user!.id, bucket: "premium-ai", endpoint: "weekly-plan", model, usage: response.usage, log: req.log });
+
     const parsed = JSON.parse(response.choices[0]?.message?.content ?? "{}");
     res.json({
       weekTheme: parsed.weekTheme ?? "A week of faithful, intentional steps.",
@@ -456,7 +480,7 @@ Return a JSON object with:
   }
 });
 
-router.post("/ai/health-summary", requireAuth, requireTier("premium"), aiRateLimit("premium-ai", 10), async (req, res) => {
+router.post("/ai/health-summary", requireAuth, requireTier("premium"), aiBudgetGuard(), aiRateLimit("premium-ai", 10), async (req, res) => {
   try {
     const body = HealthSummaryBody.safeParse(req.body);
     if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
@@ -464,8 +488,9 @@ router.post("/ai/health-summary", requireAuth, requireTier("premium"), aiRateLim
     const condCtx = body.data.conditions ? `Health conditions: ${body.data.conditions}` : "No health conditions recorded.";
     const medCtx = body.data.medications ? `Current medications: ${body.data.medications}` : "No medications recorded.";
 
+    const model = "gpt-5.4";
     const response = await openai.chat.completions.create({
-      model: "gpt-5.4",
+      model,
       max_completion_tokens: 8192,
       messages: [
         {
@@ -493,6 +518,8 @@ Return a JSON object with:
       response_format: { type: "json_object" },
     });
 
+    await recordAiUsage({ userId: req.user!.id, bucket: "premium-ai", endpoint: "health-summary", model, usage: response.usage, log: req.log });
+
     const parsed = JSON.parse(response.choices[0]?.message?.content ?? "{}");
     res.json({
       conditionsSummary: parsed.conditionsSummary ?? [],
@@ -507,15 +534,16 @@ Return a JSON object with:
   }
 });
 
-router.post("/ai/financial-coaching", requireAuth, requireTier("premium"), aiRateLimit("premium-ai", 10), async (req, res) => {
+router.post("/ai/financial-coaching", requireAuth, requireTier("premium"), aiBudgetGuard(), aiRateLimit("premium-ai", 10), async (req, res) => {
   try {
     const body = FinancialCoachingBody.safeParse(req.body);
     if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
 
     const entriesCtx = body.data.entries ? `Financial entries for ${body.data.month ?? "this month"}: ${body.data.entries}` : "No financial entries recorded yet.";
 
+    const model = "gpt-5.4";
     const response = await openai.chat.completions.create({
-      model: "gpt-5.4",
+      model,
       max_completion_tokens: 8192,
       messages: [
         {
@@ -544,6 +572,8 @@ Return a JSON object with:
       response_format: { type: "json_object" },
     });
 
+    await recordAiUsage({ userId: req.user!.id, bucket: "premium-ai", endpoint: "financial-coaching", model, usage: response.usage, log: req.log });
+
     const parsed = JSON.parse(response.choices[0]?.message?.content ?? "{}");
     res.json({
       summary: parsed.summary ?? "Your financial stewardship reflects your values.",
@@ -559,7 +589,7 @@ Return a JSON object with:
   }
 });
 
-router.post("/ai/devotional", requireAuth, requireTier("premium"), aiRateLimit("premium-ai", 10), async (req, res) => {
+router.post("/ai/devotional", requireAuth, requireTier("premium"), aiBudgetGuard(), aiRateLimit("premium-ai", 10), async (req, res) => {
   try {
     const body = DevotionalBody.safeParse(req.body);
     if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
@@ -570,8 +600,9 @@ router.post("/ai/devotional", requireAuth, requireTier("premium"), aiRateLimit("
 
     const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 
+    const model = "gpt-5.4";
     const response = await openai.chat.completions.create({
-      model: "gpt-5.4",
+      model,
       max_completion_tokens: 8192,
       messages: [
         {
@@ -599,6 +630,8 @@ Return a JSON object with:
       ],
       response_format: { type: "json_object" },
     });
+
+    await recordAiUsage({ userId: req.user!.id, bucket: "premium-ai", endpoint: "devotional", model, usage: response.usage, log: req.log });
 
     const parsed = JSON.parse(response.choices[0]?.message?.content ?? "{}");
     res.json({
