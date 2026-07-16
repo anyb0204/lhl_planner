@@ -42,6 +42,20 @@
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 }
 
+/* Latter House Life — brand kit tokens (additive, scoped to this mockup) */
+@theme {
+  --color-cold-night: #0b171b;
+  --color-cream: #faf9f6;
+  --color-sage: #8da399;
+  --color-champagne: #f2ead3;
+  --color-mint: #c4d9d2;
+  --color-gold-base: #d4af37;
+  --color-gold-dark: #aa7c11;
+  --color-gold-light: #fceabb;
+  --font-heading: "Cormorant Garamond", serif;
+  --font-body: "Manrope", sans-serif;
+}
+
 /* LIGHT MODE - Default theme with placeholder values */
 :root {
   --button-outline: rgba(0,0,0, .10);
