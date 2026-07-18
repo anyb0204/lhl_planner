@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Dancing+Script:wght@500;600&family=Great+Vibes&family=Italianno&family=Inter:wght@300;400;500;600&family=Kapakana&family=Luxurious+Roman&family=Mrs+Saint+Delafield&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Manrope:wght@300;400;500;600;700&family=Kapakana&display=swap');
 
 @layer theme, base, components, utilities;
 @import "tailwindcss";
@@ -64,92 +64,108 @@
 }
 
 :root {
-  --background: 138 22% 93%;
-  --foreground: 152 40% 14%;
-  --border: 138 18% 72%;
-  
-  --card: 138 20% 97%;
-  --card-foreground: 152 40% 14%;
-  --card-border: 138 22% 64%;
-  
-  /* Softer sage green sidebar */
-  --sidebar: 138 24% 40%;
-  --sidebar-foreground: 45 55% 94%;
-  --sidebar-border: 138 20% 32%;
-  --sidebar-primary: 43 52% 68%;
-  --sidebar-primary-foreground: 138 30% 12%;
-  --sidebar-accent: 138 20% 32%;
-  --sidebar-accent-foreground: 45 55% 94%;
-  --sidebar-ring: 43 52% 68%;
-  
-  --popover: 138 20% 97%;
-  --popover-foreground: 152 40% 14%;
-  --popover-border: 138 18% 78%;
-  
-  --primary: 43 52% 68%;
-  --primary-foreground: 152 40% 10%;
-  
-  --secondary: 138 18% 84%;
-  --secondary-foreground: 152 40% 14%;
-  
-  --muted: 138 16% 88%;
-  --muted-foreground: 152 24% 34%;
-  
-  --accent: 138 20% 86%;
-  --accent-foreground: 152 40% 14%;
-  
+  /* ── Brand Kit · Vol. I · MMXXVI ─────────────────────────────────────── */
+  /* Background: #FAF9F6 warm off-white canvas */
+  --background: 43 30% 97%;
+  /* Foreground: #0B171B deep ink */
+  --foreground: 195 42% 7%;
+  /* Border: #C4D9D2 sage mist */
+  --border: 160 22% 81%;
+
+  /* Card: slightly warmer than canvas */
+  --card: 42 35% 95%;
+  --card-foreground: 195 42% 7%;
+  --card-border: 160 22% 74%;
+
+  /* Sidebar: #3F5D53 deep sage */
+  --sidebar: 160 19% 30%;
+  /* Sidebar text: warm cream */
+  --sidebar-foreground: 43 30% 97%;
+  --sidebar-border: 160 19% 22%;
+  /* Sidebar primary: #D4AF37 gold leaf */
+  --sidebar-primary: 46 64% 52%;
+  --sidebar-primary-foreground: 195 42% 7%;
+  --sidebar-accent: 160 19% 24%;
+  --sidebar-accent-foreground: 43 30% 97%;
+  --sidebar-ring: 46 64% 52%;
+
+  --popover: 43 30% 97%;
+  --popover-foreground: 195 42% 7%;
+  --popover-border: 160 22% 76%;
+
+  /* Primary: #D4AF37 gold leaf */
+  --primary: 46 64% 52%;
+  --primary-foreground: 195 42% 7%;
+
+  /* Secondary: #C4D9D2 sage mist */
+  --secondary: 160 22% 81%;
+  --secondary-foreground: 195 42% 7%;
+
+  /* Muted: #EEECE6 light parchment */
+  --muted: 45 20% 92%;
+  --muted-foreground: 160 19% 36%;
+
+  /* Accent: #F2EAD3 warm parchment / scripture surfaces */
+  --accent: 42 54% 89%;
+  --accent-foreground: 195 42% 7%;
+
   --destructive: 0 60% 50%;
   --destructive-foreground: 0 0% 98%;
-  
-  --input: 130 15% 80%;
-  --ring: 43 52% 68%;
 
-  --app-font-sans: 'Inter', sans-serif;
-  --app-font-serif: 'Playfair Display', Georgia, serif;
+  --input: 45 20% 90%;
+  --ring: 46 64% 52%;
+
+  /* Cormorant Garamond (display/headings) + Manrope (body/UI) */
+  --app-font-sans: 'Manrope', system-ui, sans-serif;
+  --app-font-serif: 'Cormorant Garamond', Georgia, serif;
   --app-font-mono: Menlo, monospace;
-  --app-font-script: 'Dancing Script', cursive;
-  --radius: 0.3rem; 
+  --app-font-script: 'Cormorant Garamond', Georgia, serif;
+  --radius: 0.3rem;
 }
 
 .dark {
-  --background: 152 30% 10%;
-  --foreground: 45 50% 88%;
-  --border: 152 25% 20%;
-  
-  --card: 152 30% 13%;
-  --card-foreground: 45 50% 88%;
-  --card-border: 152 25% 20%;
-  
-  --sidebar: 138 26% 20%;
-  --sidebar-foreground: 45 50% 88%;
-  --sidebar-border: 138 22% 16%;
-  --sidebar-primary: 43 52% 72%;
-  --sidebar-primary-foreground: 152 35% 8%;
-  --sidebar-accent: 138 22% 18%;
-  --sidebar-accent-foreground: 45 50% 88%;
-  --sidebar-ring: 43 52% 72%;
-  
-  --popover: 152 30% 13%;
-  --popover-foreground: 45 50% 88%;
-  --popover-border: 152 25% 20%;
-  
-  --primary: 43 52% 72%;
-  --primary-foreground: 152 35% 8%;
-  
-  --secondary: 152 25% 20%;
-  --secondary-foreground: 45 50% 88%;
-  
-  --muted: 152 25% 20%;
-  --muted-foreground: 45 25% 65%;
-  
-  --accent: 152 25% 20%;
-  --accent-foreground: 45 50% 88%;
-  
+  /* Background: #0B171B deep ink */
+  --background: 195 42% 7%;
+  --foreground: 43 30% 95%;
+  --border: 160 19% 20%;
+
+  --card: 195 35% 10%;
+  --card-foreground: 43 30% 95%;
+  --card-border: 160 19% 18%;
+
+  /* Sidebar: even darker teal */
+  --sidebar: 160 19% 13%;
+  --sidebar-foreground: 43 30% 95%;
+  --sidebar-border: 160 19% 10%;
+  /* Gold brightened for dark backgrounds */
+  --sidebar-primary: 46 64% 58%;
+  --sidebar-primary-foreground: 195 42% 7%;
+  --sidebar-accent: 160 19% 17%;
+  --sidebar-accent-foreground: 43 30% 95%;
+  --sidebar-ring: 46 64% 58%;
+
+  --popover: 195 35% 10%;
+  --popover-foreground: 43 30% 95%;
+  --popover-border: 160 19% 20%;
+
+  /* Gold, slightly brightened */
+  --primary: 46 64% 58%;
+  --primary-foreground: 195 42% 7%;
+
+  --secondary: 160 19% 20%;
+  --secondary-foreground: 43 30% 95%;
+
+  --muted: 160 19% 16%;
+  --muted-foreground: 43 25% 65%;
+
+  --accent: 195 35% 13%;
+  --accent-foreground: 43 30% 95%;
+
   --destructive: 0 50% 40%;
   --destructive-foreground: 0 0% 98%;
-  
-  --input: 152 25% 20%;
-  --ring: 43 52% 72%;
+
+  --input: 160 19% 18%;
+  --ring: 46 64% 58%;
 }
 
 @layer base {
@@ -210,8 +226,8 @@ textarea::placeholder {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 60% 50% at 20% 80%, hsl(138 22% 80% / 0.10) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 60% at 80% 15%, hsl(43 52% 78% / 0.07) 0%, transparent 65%);
+    radial-gradient(ellipse 60% 50% at 20% 80%, hsl(160 22% 81% / 0.10) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 80% 15%, hsl(46 64% 78% / 0.07) 0%, transparent 65%);
   animation: ambient-drift 22s ease-in-out infinite alternate;
 }
 
@@ -220,8 +236,8 @@ textarea::placeholder {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 40% 40% at 60% 90%, hsl(138 18% 72% / 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 35% 45% at 15% 25%, hsl(43 40% 72% / 0.06) 0%, transparent 55%);
+    radial-gradient(ellipse 40% 40% at 60% 90%, hsl(160 22% 72% / 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 35% 45% at 15% 25%, hsl(46 64% 72% / 0.06) 0%, transparent 55%);
   animation: ambient-drift 28s ease-in-out infinite alternate-reverse;
 }
 
@@ -266,7 +282,7 @@ textarea::placeholder {
   background: linear-gradient(
     105deg,
     transparent 35%,
-    hsl(43 52% 90% / 0.28) 50%,
+    hsl(46 64% 90% / 0.28) 50%,
     transparent 65%
   );
   background-size: 250% 100%;
@@ -280,8 +296,8 @@ textarea::placeholder {
 
 /* ── Gold glow pulse for premium/featured elements ────────────────────────── */
 @keyframes gold-pulse {
-  0%,  100% { box-shadow: 0 0 0   0   hsl(43 52% 68% / 0.25); }
-  50%        { box-shadow: 0 0 22px 4px hsl(43 52% 68% / 0.18); }
+  0%,  100% { box-shadow: 0 0 0   0   hsl(46 64% 52% / 0.25); }
+  50%        { box-shadow: 0 0 22px 4px hsl(46 64% 52% / 0.18); }
 }
 
 .premium-glow {
