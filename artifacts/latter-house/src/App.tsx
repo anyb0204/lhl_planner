@@ -111,12 +111,37 @@ const clerkAppearance = {
   },
 };
 
-function Spinner() {
+function Spinner({ timedOut }: { timedOut?: boolean } = {}) {
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 p-8">
+      {timedOut ? (
+        <div className="max-w-sm text-center space-y-3">
+          <p className="font-serif text-lg text-foreground">Taking too long to load</p>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            The app is having trouble connecting. Try refreshing the page. If the problem persists, check your internet connection.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-2 px-4 py-2 rounded-lg text-sm font-medium"
+            style={{ backgroundColor: "hsl(43, 52%, 68%)", color: "hsl(152, 40%, 10%)" }}
+          >
+            Refresh
+          </button>
+        </div>
+      ) : (
+        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      )}
     </div>
   );
+}
+
+function SpinnerWithTimeout() {
+  const [timedOut, setTimedOut] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setTimedOut(true), 8000);
+    return () => clearTimeout(t);
+  }, []);
+  return <Spinner timedOut={timedOut} />;
 }
 
 function LoginScreen() {
@@ -343,10 +368,10 @@ function AppRouter() {
   // Never show the landing page while isSignedIn is still undefined — that
   // would cause the marketing page to flash for authenticated users on slow
   // connections.
-  if (!isLoaded) return <Spinner />;
+  if (!isLoaded) return <SpinnerWithTimeout />;
   // Show landing page for non-authenticated visitors (auth routes handled by parent Switch)
   if (!isSignedIn) return <LandingPage />;
-  if (tierStatus === "loading") return <Spinner />;
+  if (tierStatus === "loading") return <SpinnerWithTimeout />;
 
   const tier: Tier = tierStatus;
 
