@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Latter House Life Planner** — a faith-based digital life planner SaaS (brand anchor: Haggai 2:9). Multi-user with private data isolation and a Stripe subscription paywall (free / regular / premium tiers).
+**Latter House Life Planner** — a faith-based digital life planner SaaS (brand anchor: Haggai 2:9). Multi-user with private data isolation and a Stripe subscription paywall (free / regular / premium tiers). Built with Express 5 backend + React 19 frontend.
 
 ## Commands
 
@@ -50,7 +50,6 @@ lib/
   db/             — Drizzle ORM schema + pg pool
   integrations-openai-ai-server/  — OpenAI server-side helpers
   integrations-openai-ai-react/   — OpenAI client-side helpers
-  replit-auth-web/  — (legacy name) Clerk web helpers
 scripts/          — Seed scripts
 ```
 
@@ -83,7 +82,7 @@ scripts/          — Seed scripts
 
 - Drizzle ORM over `node-postgres`. Connection via `DATABASE_URL` env var.
 - **Public schema** (managed by Drizzle + `drizzle-kit push`): `users`, `sessions`, `planner_entries`, `tasks`, `brain_dumps`, `medications`, `health_appointments`, `health_conditions`, `financial_entries`, `goals`, `conversations`, `messages`, and more.
-- **Stripe schema** (managed by `stripe-replit-sync`, never touch manually): `stripe.products`, `stripe.prices`, `stripe.customers`, `stripe.subscriptions`, etc. The `StripeStorage` class in `api-server/src/lib/stripeStorage.ts` queries this schema via raw `sql` tagged templates.
+- **Stripe schema** (managed by Stripe webhooks): `stripe.products`, `stripe.prices`, `stripe.customers`, `stripe.subscriptions`, etc. The `StripeStorage` class in `api-server/src/lib/stripeStorage.ts` queries this schema via raw `sql` tagged templates.
 - **Every app table has a `userId` column.** All queries must filter by `req.user.id`.
 
 ### Frontend (`artifacts/latter-house`)
@@ -92,13 +91,13 @@ scripts/          — Seed scripts
 - **`src/App.tsx`** is the root. Auth flow:
   1. `ClerkProvider` wraps everything.
   2. `AppRouter` checks `isSignedIn`; unauthenticated visitors see `LandingPage`.
-  3. After sign-in, `useSubscriptionTier` fetches `GET /api/stripe/subscription-status` with retry and caches the result in localStorage (`lhl_sub_tier_v2`) for 1 hour. Only `"regular"` and `"premium"` are cached; `"free"` is always re-verified.
+  3. After sign-in, `useSubscriptionTier` fetches `GET /api/stripe/subscription-status` with retry and caches the result in localStorage (`lhl_sub_tier_v2`) for 1 hour. Only `"regular"` and `"premium"` users see the paid planner.
   4. Tier is provided to the whole tree via `TierContext`. Use `useTier()` to read it.
   5. Free users get `FreePlannerRouter`; paid users get full `Router` wrapped in `RemindersProvider`.
   6. First-time paid users are redirected to `/onboarding` until `localStorage("lhl-onboarding-done") === "true"`.
 - **`AppLayout`** (`src/components/layout/app-layout.tsx`): responsive sidebar (desktop) + top header + bottom nav bar (mobile). Navigation items gated by tier.
 - **`UpgradeGate`** component: wrap premium UI sections to show an upgrade prompt for non-premium users.
-- API calls use the generated hooks from `@workspace/api-client-react`. The underlying fetch is `customFetch` from `lib/api-client-react/src/custom-fetch.ts`, which handles auth token injection, base URL, and structured error types (`ApiError`, `ResponseParseError`).
+- API calls use the generated hooks from `@workspace/api-client-react`. The underlying fetch is `customFetch` from `lib/api-client-react/src/custom-fetch.ts`, which handles auth token injection, Clerk refresh, and error handling.
 
 ### Subscription Tiers
 
@@ -123,7 +122,7 @@ All under `/api/ai/`, powered by `@workspace/integrations-openai-ai-server`. Rat
 ### Required Environment Variables
 
 See `.env.example`. Key vars:
-- `DATABASE_URL` — Neon PostgreSQL connection string
+- `DATABASE_URL` — PostgreSQL connection string
 - `CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` — Clerk API keys (server)
 - `VITE_CLERK_PUBLISHABLE_KEY` — baked into the frontend build
 - `VITE_CLERK_PROXY_URL` — optional Clerk proxy
@@ -133,7 +132,6 @@ See `.env.example`. Key vars:
 ### Key Conventions
 
 - `pnpm-workspace.yaml` defines a shared `catalog:` for all pinned dependency versions. Use `catalog:` (not a version string) when adding dependencies that are already in the catalog.
-- `minimumReleaseAge: 1440` (1 day) is enforced for all packages except `@replit/*` and `stripe-replit-sync`. Do not disable this.
 - TypeScript: `noImplicitAny`, `strictNullChecks`, `useUnknownInCatchVariables` are on. `moduleResolution: "bundler"`. All packages inherit from `tsconfig.base.json`.
-- The `pathGate` wrapper in `routes/index.ts` is intentional — it prevents auth middleware in one router from leaking into sibling routes. Always use it when registering a router that applies `router.use(requireAuth)` globally.
+- The `pathGate` wrapper in `routes/index.ts` is intentional — it prevents auth middleware in one router from leaking into sibling routes. Always use it when registering a router that applies global middleware.
 - Stripe webhook registration before `express.json()` is a hard requirement — do not move it.
