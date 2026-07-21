@@ -16,7 +16,7 @@
 # passed (e.g. an urgent security bugfix), you can add it to the
 # `minimumReleaseAgeExclude` allowlist below. Only consider doing this for
 # packages released by trusted organizations with an impeccable security
-# posture (e.g. Replit packsges, react from Meta, typescript from Microsoft). Even then,
+# posture (e.g. react from Meta, typescript from Microsoft). Even then,
 # remove the exclusion once the 1-day window has passed.
 #
 # Example:
@@ -27,12 +27,7 @@
 # ============================================================================
 minimumReleaseAge: 1440
 
-minimumReleaseAgeExclude:
-  # Exclude @replit scoped packages from the minimum release age check.
-  # These are published by Replit and trusted — the supply-chain attack vector
-  # this setting guards against does not apply to our own packages.
-  - '@replit/*'
-  - stripe-replit-sync
+minimumReleaseAgeExclude: []
 
 packages:
   - artifacts/*
@@ -45,6 +40,7 @@ catalog:
   '@replit/vite-plugin-dev-banner': ^0.1.1
   '@replit/vite-plugin-runtime-error-modal': ^0.0.6
   '@tailwindcss/vite': ^4.1.14
+  '@tailwindcss/typography': ^0.5.15
   '@tanstack/react-query': ^5.90.21
   '@types/node': ^25.3.3
   '@types/react': ^19.2.0
@@ -175,3 +171,5 @@ overrides:
   postcss: "8.5.14"
   # lodash code injection + prototype pollution (GHSA-r5fr-rjxr-66jc, GHSA-f23m-r3pf-42rh)
   lodash: "4.18.1"
+  # js-yaml quadratic-CPU merge-key DoS (GHSA-52cp-r559-cp3m)
+  "js-yaml@^4": "4.3.0"

@@ -1,7 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
-import { runMigrations } from "stripe-replit-sync";
-import { getStripeSync, getUncachableStripeClient } from "./lib/stripeClient";
+import { getUncachableStripeClient } from "./lib/stripeClient";
 import { pool } from "@workspace/db";
 
 const rawPort = process.env["PORT"];
@@ -107,31 +106,10 @@ async function initAppTables() {
 }
 
 async function initStripe() {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) {
-    logger.warn("DATABASE_URL not set — skipping Stripe initialization");
-    return;
-  }
-
   try {
-    logger.info("Initializing Stripe schema...");
-    await runMigrations({ databaseUrl });
-    logger.info("Stripe schema ready");
-
     await ensureStripeProduct();
-
-    const stripeSync = await getStripeSync();
-
-    const webhookBaseUrl = process.env.RENDER_EXTERNAL_URL
-      ?? `https://${process.env.REPLIT_DOMAINS?.split(",")[0] ?? "localhost"}`;
-    await stripeSync.findOrCreateManagedWebhook(`${webhookBaseUrl}/api/stripe/webhook`);
-    logger.info("Stripe webhook configured");
-
-    stripeSync.syncBackfill()
-      .then(() => logger.info("Stripe data synced"))
-      .catch((err) => logger.error({ err }, "Stripe syncBackfill error"));
   } catch (err) {
-    logger.warn({ err }, "Stripe initialization skipped (integration not connected yet)");
+    logger.warn({ err }, "Stripe initialization error");
   }
 }
 
