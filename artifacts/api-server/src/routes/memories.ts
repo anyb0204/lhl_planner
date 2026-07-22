@@ -24,7 +24,7 @@ router.get("/memories", requireAuth, async (req, res) => {
 router.delete("/memories/:id", requireAuth, async (req, res) => {
   try {
     const userId = req.user!.id;
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(String(req.params.id), 10);
     await db.execute(
       sql`DELETE FROM public.user_memories WHERE id = ${id} AND user_id = ${userId}`
     );
@@ -38,7 +38,7 @@ router.delete("/memories/:id", requireAuth, async (req, res) => {
 router.patch("/memories/:id", requireAuth, async (req, res) => {
   try {
     const userId = req.user!.id;
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(String(req.params.id), 10);
     const { content } = z.object({ content: z.string().min(1).max(500) }).parse(req.body);
     await db.execute(
       sql`UPDATE public.user_memories SET content = ${content}, updated_at = NOW()

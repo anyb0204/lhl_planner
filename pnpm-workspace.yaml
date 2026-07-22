@@ -62,7 +62,7 @@ catalog:
   tailwind-merge: ^3.3.1
   tailwindcss: ^4.1.14
   tsx: ^4.21.0
-  vite: ^7.3.2
+  vite: ^7.3.5
   wouter: ^3.3.5
   zod: ^3.25.76
 
@@ -165,13 +165,20 @@ overrides:
   "picomatch@^4": "4.0.4"
   # brace-expansion DoS (GHSA-f886-m6hf-6m8v)
   "brace-expansion@^2": "2.1.0"
+  # brace-expansion DoS via exponential-time expansion (GHSA-3jxr-9vmj-r5cp)
+  "brace-expansion@^5": "5.0.7"
   # yaml stack overflow (GHSA-48c2-rrv3-qjmp)
   "yaml@^2": "2.9.0"
   # path-to-regexp ReDoS (GHSA-j3q9-mxjg-w52f, GHSA-27v5-c462-wpq7)
   "path-to-regexp@^8": "8.4.2"
-  # fast-uri path traversal + host confusion (GHSA-q3j6-qgpj-74h6, GHSA-v39h-62p7-jpjc)
-  fast-uri: "3.1.2"
+  # fast-uri host confusion via backslash authority delimiter + failed IDN
+  # canonicalization (GHSA-v2hh-gcrm-f6hx, GHSA-4c8g-83qw-93j6)
+  fast-uri: "3.1.4"
   # postcss XSS (GHSA-qx2v-qp2m-jg93)
   postcss: "8.5.14"
   # lodash code injection + prototype pollution (GHSA-r5fr-rjxr-66jc, GHSA-f23m-r3pf-42rh)
   lodash: "4.18.1"
+  # js-yaml merge-key quadratic CPU consumption (GHSA-52cp-r559-cp3m)
+  js-yaml: "4.3.0"
+  # linkify-it quadratic-complexity DoS via mailto: validator (GHSA-v245-v573-v5vm)
+  linkify-it: "5.0.2"
