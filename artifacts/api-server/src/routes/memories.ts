@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { requireAuth } from "../middlewares/requireAuth";
+import { recordAiUsage } from "../lib/aiBudget";
 import { z } from "zod/v4";
 
 const router = Router();
@@ -24,7 +25,7 @@ router.get("/memories", requireAuth, async (req, res) => {
 router.delete("/memories/:id", requireAuth, async (req, res) => {
   try {
     const userId = req.user!.id;
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(String(req.params.id), 10);
     await db.execute(
       sql`DELETE FROM public.user_memories WHERE id = ${id} AND user_id = ${userId}`
     );
@@ -38,7 +39,7 @@ router.delete("/memories/:id", requireAuth, async (req, res) => {
 router.patch("/memories/:id", requireAuth, async (req, res) => {
   try {
     const userId = req.user!.id;
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(String(req.params.id), 10);
     const { content } = z.object({ content: z.string().min(1).max(500) }).parse(req.body);
     await db.execute(
       sql`UPDATE public.user_memories SET content = ${content}, updated_at = NOW()
@@ -54,8 +55,9 @@ router.patch("/memories/:id", requireAuth, async (req, res) => {
 export async function extractAndSaveMemories(userId: string, conversationText: string, allowMemory = true): Promise<void> {
   if (!allowMemory) return;
   try {
+    const model = "gpt-4o-mini";
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model,
       max_completion_tokens: 400,
       messages: [
         {
@@ -66,6 +68,8 @@ export async function extractAndSaveMemories(userId: string, conversationText: s
       ],
       response_format: { type: "json_object" },
     });
+
+    await recordAiUsage({ userId, bucket: "internal", endpoint: "memories/extract", model, usage: response.usage });
 
     const raw = JSON.parse(response.choices[0]?.message?.content ?? "{}");
     const items: Array<{ kind: string; content: string }> = Array.isArray(raw) ? raw : (Array.isArray(raw.memories) ? raw.memories : []);

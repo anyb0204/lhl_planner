@@ -1,6 +1,9 @@
 import { Router, type Request, type Response } from "express";
+import { db } from "@workspace/db";
+import { sql } from "drizzle-orm";
 import { requireAuth } from "../middlewares/requireAuth";
 import { stripeStorage } from "../lib/stripeStorage";
+import { getLocalDateParts } from "../lib/aiBudget";
 import { z } from "zod/v4";
 
 const router = Router();
@@ -57,6 +60,53 @@ router.get("/admin/lifetime-access", requireAuth, requireOwner, async (_req: Req
     createdAt: usersTable.createdAt,
   }).from(usersTable).where(eq(usersTable.lifetimeAccess, true));
   res.json({ users });
+});
+
+router.get("/admin/ai-usage", requireAuth, requireOwner, async (req: Request, res: Response) => {
+  try {
+    const { date, month } = getLocalDateParts();
+    const monthlyLimit = Number(process.env.AI_MONTHLY_DOLLAR_LIMIT ?? "25");
+
+    const [monthlyTotals, todayByUser, recentCalls] = await Promise.all([
+      db.execute(sql`
+        SELECT COALESCE(SUM(cost_usd), 0) AS spent, COALESCE(SUM(total_tokens), 0) AS tokens, COUNT(*) AS calls
+        FROM public.ai_usage_log
+        WHERE local_month = ${month}
+      `),
+      db.execute(sql`
+        SELECT user_id, bucket, COUNT(*) AS calls
+        FROM public.ai_usage_log
+        WHERE local_date = ${date}
+        GROUP BY user_id, bucket
+        ORDER BY calls DESC
+        LIMIT 50
+      `),
+      db.execute(sql`
+        SELECT user_id, bucket, endpoint, model, prompt_tokens, completion_tokens, cost_usd, created_at
+        FROM public.ai_usage_log
+        ORDER BY created_at DESC
+        LIMIT 50
+      `),
+    ]);
+
+    const totals = monthlyTotals.rows[0] as { spent: string | number; tokens: string | number; calls: string | number };
+    const spent = Number(totals.spent);
+    const percentUsed = monthlyLimit > 0 ? Math.round(((spent / monthlyLimit) * 100) * 10) / 10 : 0;
+
+    res.json({
+      month,
+      monthlyLimit,
+      monthlySpent: spent,
+      percentUsed,
+      monthlyCalls: Number(totals.calls),
+      monthlyTokens: Number(totals.tokens),
+      today: todayByUser.rows,
+      recentCalls: recentCalls.rows,
+    });
+  } catch (err) {
+    req.log.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 export default router;
